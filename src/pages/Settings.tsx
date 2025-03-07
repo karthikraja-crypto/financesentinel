@@ -38,11 +38,11 @@ const Settings = () => {
                 </div>
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" defaultValue="demo@financeguard.com" className="mt-1" />
+                  <Input id="email" type="email" defaultValue="demo@financesentinel.com" className="mt-1" />
                 </div>
                 <div>
                   <Label htmlFor="company">Company</Label>
-                  <Input id="company" defaultValue="FinanceGuard Inc." className="mt-1" />
+                  <Input id="company" defaultValue="Finance Sentinel Inc." className="mt-1" />
                 </div>
               </div>
               <Button>Save Changes</Button>
@@ -120,7 +120,7 @@ const Settings = () => {
           <TabsContent value="api">
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">API Access</h2>
-              <p className="text-slate-500 mb-4">Manage your API keys and access to the FinanceGuard API</p>
+              <p className="text-slate-500 mb-4">Manage your API keys and access to the Finance Sentinel API</p>
               
               <div className="border rounded-md p-4 mb-6">
                 <div className="flex justify-between items-center mb-2">

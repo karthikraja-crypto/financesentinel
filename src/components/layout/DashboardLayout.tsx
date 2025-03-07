@@ -65,7 +65,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <span className="font-semibold text-xl text-slate-900">
-                  FinanceGuard
+                  Finance Sentinel
                 </span>
               </Link>
             </div>
