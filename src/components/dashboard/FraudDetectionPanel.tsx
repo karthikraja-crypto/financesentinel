@@ -8,12 +8,17 @@ import { getRiskLevel, formatCurrency } from '@/utils/analytics';
 import { Progress } from "@/components/ui/progress";
 import { cn } from '@/lib/utils';
 import AnalyticsCard from './AnalyticsCard';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 
 interface FraudDetectionPanelProps {
   transactions: Transaction[];
 }
 
 const FraudDetectionPanel: React.FC<FraudDetectionPanelProps> = ({ transactions }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   // Get flagged transactions sorted by risk score (highest first)
   const flaggedTransactions = transactions
     .filter(t => t.flagged)
@@ -27,12 +32,31 @@ const FraudDetectionPanel: React.FC<FraudDetectionPanelProps> = ({ transactions 
     return 'bg-yellow-500';
   };
   
+  const handleApprove = (transactionId: string) => {
+    toast({
+      title: "Transaction Approved",
+      description: `Transaction ${transactionId} has been marked as legitimate.`,
+    });
+  };
+  
+  const handleFlag = (transactionId: string) => {
+    toast({
+      title: "Transaction Flagged",
+      description: `Transaction ${transactionId} has been flagged as potentially fraudulent.`,
+    });
+  };
+  
+  const handleViewAllAlerts = () => {
+    navigate('/alerts');
+  };
+  
   const getActionButtons = (transaction: Transaction) => (
     <div className="flex space-x-2">
       <Button 
         size="sm" 
         variant="outline"
         className="text-xs h-7 px-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+        onClick={() => handleFlag(transaction.id)}
       >
         <XCircle className="h-3 w-3 mr-1" />
         Flag
@@ -41,6 +65,7 @@ const FraudDetectionPanel: React.FC<FraudDetectionPanelProps> = ({ transactions 
         size="sm" 
         variant="outline"
         className="text-xs h-7 px-2 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800"
+        onClick={() => handleApprove(transaction.id)}
       >
         <CheckCircle className="h-3 w-3 mr-1" />
         Approve
@@ -120,6 +145,12 @@ const FraudDetectionPanel: React.FC<FraudDetectionPanelProps> = ({ transactions 
               </div>
             </div>
           ))}
+          
+          <div className="mt-3 text-center">
+            <Button variant="outline" size="sm" onClick={handleViewAllAlerts}>
+              View all flagged transactions
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="py-8 text-center">
@@ -130,7 +161,9 @@ const FraudDetectionPanel: React.FC<FraudDetectionPanelProps> = ({ transactions 
           </div>
           <h3 className="text-lg font-medium text-slate-900 mb-1">No flagged transactions</h3>
           <p className="text-sm text-slate-500 mb-4">All of your recent transactions appear to be legitimate.</p>
-          <Button size="sm" variant="outline" className="mx-auto">View all transactions</Button>
+          <Button size="sm" variant="outline" className="mx-auto" onClick={() => navigate('/transactions')}>
+            View all transactions
+          </Button>
         </div>
       )}
     </AnalyticsCard>

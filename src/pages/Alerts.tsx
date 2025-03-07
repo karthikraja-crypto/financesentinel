@@ -2,12 +2,13 @@
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { generateDemoTransactions } from '@/utils/demoData';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Flag } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const Alerts = () => {
   const transactions = generateDemoTransactions(100);
@@ -15,11 +16,28 @@ const Alerts = () => {
     .filter(t => t.flagged)
     .sort((a, b) => b.riskScore - a.riskScore);
   
+  const { toast } = useToast();
+  
   const getRiskColor = (score: number): string => {
     if (score >= 90) return 'bg-red-600';
     if (score >= 80) return 'bg-red-500';
     if (score >= 70) return 'bg-orange-500';
     return 'bg-yellow-500';
+  };
+  
+  const handleApprove = (transactionId: string) => {
+    toast({
+      title: "Transaction Approved",
+      description: `Transaction ${transactionId} has been marked as legitimate.`,
+    });
+  };
+  
+  const handleFlagAsFraud = (transactionId: string) => {
+    toast({
+      title: "Transaction Flagged as Fraud",
+      description: `Transaction ${transactionId} has been confirmed as fraudulent and will be reported.`,
+      variant: "destructive",
+    });
   };
   
   return (
@@ -73,8 +91,23 @@ const Alerts = () => {
                 </div>
                 
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm">Ignore</Button>
-                  <Button variant="destructive" size="sm">Flag as Fraud</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleApprove(transaction.id)}
+                    className="text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Approve
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => handleFlagAsFraud(transaction.id)}
+                  >
+                    <Flag className="h-4 w-4 mr-1" />
+                    Flag as Fraud
+                  </Button>
                 </div>
               </Card>
             ))}
