@@ -16,6 +16,7 @@ import {
   generateRiskDistribution,
   Transaction
 } from '@/utils/demoData';
+import { formatCurrency } from '@/utils/analytics';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { ArrowUpRight, TrendingUp, BarChart3, PieChart as PieChartIcon, AlertTriangle } from 'lucide-react';
