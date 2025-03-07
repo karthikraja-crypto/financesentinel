@@ -1,5 +1,6 @@
 
 import React, { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
@@ -20,9 +21,19 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const location = useLocation();
   
   // Toggle sidebar on mobile
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  
+  // Navigation items with proper routes
+  const navItems = [
+    { name: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, href: '/' },
+    { name: 'Transactions', icon: <CreditCard className="h-5 w-5" />, href: '/transactions' },
+    { name: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, href: '/analytics' },
+    { name: 'Fraud Alerts', icon: <AlertTriangle className="h-5 w-5" />, href: '/alerts' },
+    { name: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/settings' },
+  ];
   
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -49,14 +60,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             
             {/* Logo */}
             <div className="flex items-center">
-              <div className="flex items-center">
+              <Link to="/" className="flex items-center">
                 <div className="bg-finance-blue rounded-md p-1 mr-2">
                   <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <span className="font-semibold text-xl text-slate-900">
                   FinanceGuard
                 </span>
-              </div>
+              </Link>
             </div>
             
             {/* Right side nav items */}
@@ -84,26 +95,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         )}>
           <div className="flex-1 overflow-y-auto p-4">
             <nav className="space-y-1 mt-6">
-              {[
-                { name: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, href: '/' },
-                { name: 'Transactions', icon: <CreditCard className="h-5 w-5" />, href: '/' },
-                { name: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, href: '/' },
-                { name: 'Fraud Alerts', icon: <AlertTriangle className="h-5 w-5" />, href: '/' },
-                { name: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/' },
-              ].map((item) => (
-                <a
+              {navItems.map((item) => (
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className={cn(
                     "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    item.name === 'Dashboard'
+                    location.pathname === item.href
                       ? "bg-finance-blue text-white"
                       : "text-slate-700 hover:bg-slate-100"
                   )}
                 >
                   {item.icon}
                   <span className="ml-3">{item.name}</span>
-                </a>
+                </Link>
               ))}
             </nav>
           </div>
