@@ -17,6 +17,30 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 import { formatCurrency } from '@/utils/analytics';
 import { ArrowUpRight, TrendingUp, BarChart3, PieChart as PieChartIcon, AlertTriangle } from 'lucide-react';
 
+// Define types for the tooltip props
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    payload: {
+      total: number;
+      [key: string]: any;
+    };
+  }>;
+}
+
+interface RiskTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      range: string;
+      [key: string]: any;
+    };
+  }>;
+}
+
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
@@ -52,7 +76,7 @@ const Index = () => {
   const COLORS = ['#2D7FF9', '#F45B69', '#10B981', '#6366F1'];
   const RISK_COLORS = ['#10B981', '#84CC16', '#FACC15', '#F59E0B', '#F45B69'];
   
-  const CustomTooltip = ({ active, payload }) => {
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-slate-200 shadow-lg rounded-md">
@@ -71,7 +95,7 @@ const Index = () => {
     return null;
   };
   
-  const RiskTooltip = ({ active, payload }) => {
+  const RiskTooltip = ({ active, payload }: RiskTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-slate-200 shadow-lg rounded-md">

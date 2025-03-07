@@ -1,15 +1,15 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
 
-interface DataGridProps<T> {
+interface DataGridProps<T extends Record<string, any>> {
   data: T[];
   columns: {
-    accessor: keyof T | ((row: T) => React.ReactNode);
+    accessor: keyof T | ((row: T) => ReactNode);
     header: string;
-    cell?: (value: any, row: T) => React.ReactNode;
+    cell?: (value: any, row: T) => ReactNode;
     className?: string;
   }[];
   keyAccessor: keyof T | ((row: T) => string);
@@ -19,7 +19,7 @@ interface DataGridProps<T> {
   emptyMessage?: string;
 }
 
-function DataGrid<T>({
+function DataGrid<T extends Record<string, any>>({
   data,
   columns,
   keyAccessor,
@@ -35,11 +35,11 @@ function DataGrid<T>({
     return String(row[keyAccessor]);
   };
 
-  const getCellValue = (row: T, accessor: keyof T | ((row: T) => React.ReactNode)) => {
+  const getCellValue = (row: T, accessor: keyof T | ((row: T) => ReactNode)): ReactNode => {
     if (typeof accessor === 'function') {
       return accessor(row);
     }
-    return row[accessor];
+    return row[accessor] as ReactNode;
   };
 
   const getRowClassNames = (row: T) => {
