@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { 
@@ -8,18 +7,20 @@ import {
   CreditCard, 
   Calendar 
 } from "lucide-react";
-import { formatCurrency } from '@/utils/analytics';
 import { AccountSummary } from '@/utils/demoData';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface DashboardHeaderProps {
   summary: AccountSummary;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ summary }) => {
+  const { formatAmount } = useCurrency();
+  
   const cards = [
     {
       title: 'Total Balance',
-      value: formatCurrency(summary.totalBalance),
+      value: formatAmount(summary.totalBalance),
       icon: <CreditCard className="h-5 w-5 text-finance-blue" />,
       change: summary.totalBalance > 0 ? (
         <span className="text-green-600 flex items-center">
@@ -35,7 +36,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ summary }) => {
     },
     {
       title: 'Total Inflow',
-      value: formatCurrency(summary.totalInflow),
+      value: formatAmount(summary.totalInflow),
       icon: <TrendingUp className="h-5 w-5 text-green-600" />,
       change: (
         <span className="text-green-600 flex items-center">
@@ -46,7 +47,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ summary }) => {
     },
     {
       title: 'Total Outflow',
-      value: formatCurrency(summary.totalOutflow),
+      value: formatAmount(summary.totalOutflow),
       icon: <TrendingDown className="h-5 w-5 text-finance-blue" />,
       change: (
         <span className="text-finance-blue flex items-center">

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCurrency } from '@/utils/analytics';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface DailyTotal {
   date: string;
@@ -17,6 +17,8 @@ interface TransactionChartProps {
 }
 
 const TransactionChart: React.FC<TransactionChartProps> = ({ data }) => {
+  const { formatAmount } = useCurrency();
+  
   const formatXAxis = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -29,13 +31,13 @@ const TransactionChart: React.FC<TransactionChartProps> = ({ data }) => {
           <p className="font-medium text-sm text-slate-900 mb-1">{formatXAxis(label)}</p>
           <div className="text-xs space-y-1">
             <p className="text-emerald-600">
-              Inflow: {formatCurrency(payload[0].value)}
+              Inflow: {formatAmount(payload[0].value)}
             </p>
             <p className="text-finance-blue">
-              Outflow: {formatCurrency(payload[1].value)}
+              Outflow: {formatAmount(payload[1].value)}
             </p>
             <p className={payload[2].value >= 0 ? "text-emerald-600" : "text-red-600"}>
-              Net: {formatCurrency(payload[2].value)}
+              Net: {formatAmount(payload[2].value)}
             </p>
           </div>
         </div>
@@ -84,7 +86,7 @@ const TransactionChart: React.FC<TransactionChartProps> = ({ data }) => {
               tickLine={{ stroke: '#E2E8F0' }}
             />
             <YAxis 
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => formatAmount(value).split('.')[0]} // Only show main currency unit
               tick={{ fontSize: 12, fill: '#64748B' }}
               axisLine={{ stroke: '#E2E8F0' }}
               tickLine={{ stroke: '#E2E8F0' }}

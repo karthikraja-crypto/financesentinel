@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Transaction } from '@/utils/demoData';
-import { formatCurrency, getStatusColor, getTransactionTypeColor, getRiskLevel, getRiskColor } from '@/utils/analytics';
+import { getStatusColor, getTransactionTypeColor, getRiskLevel, getRiskColor } from '@/utils/analytics';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AnalyticsCard from './AnalyticsCard';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -27,6 +28,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => 
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
+  const { formatAmount } = useCurrency();
   
   // Apply search filter
   const filteredTransactions = transactions.filter(transaction => {
@@ -154,7 +156,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => 
                       'text-slate-900'
                     )}>
                       {transaction.type === 'deposit' ? '+ ' : '- '}
-                      {formatCurrency(transaction.amount)}
+                      {formatAmount(transaction.amount)}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 border-b border-slate-200 text-sm">

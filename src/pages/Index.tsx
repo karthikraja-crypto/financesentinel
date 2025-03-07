@@ -6,15 +6,18 @@ import TransactionTable from '@/components/dashboard/TransactionTable';
 import TransactionChart from '@/components/dashboard/TransactionChart';
 import FraudDetectionPanel from '@/components/dashboard/FraudDetectionPanel';
 import AnalyticsCard from '@/components/dashboard/AnalyticsCard';
+import CurrencySelector from '@/components/dashboard/CurrencySelector';
+import DatasetUploader from '@/components/dashboard/DatasetUploader';
 import { 
   generateDemoTransactions, 
   calculateAccountSummary, 
   generateDailyTotals, 
   generateTransactionsByType,
-  generateRiskDistribution
+  generateRiskDistribution,
+  Transaction
 } from '@/utils/demoData';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { formatCurrency } from '@/utils/analytics';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { ArrowUpRight, TrendingUp, BarChart3, PieChart as PieChartIcon, AlertTriangle } from 'lucide-react';
 
 // Define types for the tooltip props
@@ -43,11 +46,12 @@ interface RiskTooltipProps {
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [transactions, setTransactions] = useState([]);
-  const [summary, setSummary] = useState(null);
-  const [dailyTotals, setDailyTotals] = useState([]);
-  const [transactionsByType, setTransactionsByType] = useState([]);
-  const [riskDistribution, setRiskDistribution] = useState([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [dailyTotals, setDailyTotals] = useState<any[]>([]);
+  const [transactionsByType, setTransactionsByType] = useState<any[]>([]);
+  const [riskDistribution, setRiskDistribution] = useState<any[]>([]);
+  const { formatAmount } = useCurrency();
   
   // Load demo data
   useEffect(() => {
@@ -71,6 +75,19 @@ const Index = () => {
     
     loadData();
   }, []);
+
+  const handleDatasetUploaded = (newTransactions: Transaction[]) => {
+    setTransactions(newTransactions);
+    const accountSummary = calculateAccountSummary(newTransactions);
+    const dailyTransactionTotals = generateDailyTotals(newTransactions);
+    const transactionTypeCounts = generateTransactionsByType(newTransactions);
+    const riskScoreDistribution = generateRiskDistribution(newTransactions);
+    
+    setSummary(accountSummary);
+    setDailyTotals(dailyTransactionTotals);
+    setTransactionsByType(transactionTypeCounts);
+    setRiskDistribution(riskScoreDistribution);
+  };
   
   // Chart configs
   const COLORS = ['#2D7FF9', '#F45B69', '#10B981', '#6366F1'];
@@ -122,11 +139,16 @@ const Index = () => {
   
   return (
     <DashboardLayout>
+      {/* Currency Selector */}
+      <div className="flex justify-end mb-4">
+        <CurrencySelector />
+      </div>
+      
       {/* Dashboard Header with KPI Cards */}
       <DashboardHeader summary={summary} />
       
       {/* Main Dashboard Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
         {/* Transaction Chart */}
         <div className="lg:col-span-2">
           <TransactionChart data={dailyTotals} />
@@ -135,6 +157,11 @@ const Index = () => {
         {/* Fraud Detection Panel */}
         <div className="lg:col-span-1">
           <FraudDetectionPanel transactions={transactions} />
+        </div>
+        
+        {/* Dataset Uploader */}
+        <div className="lg:col-span-1">
+          <DatasetUploader onDatasetUploaded={handleDatasetUploaded} />
         </div>
       </div>
       
