@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, FileText, AlertCircle, FileSpreadsheet, FileImage, Database } from 'lucide-react';
+import { Upload, FileText, AlertCircle, FileSpreadsheet, FileImage, Database, BarChart4 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from '@/contexts/UserContext';
 import { useDataset } from '@/contexts/DatasetContext';
@@ -17,7 +17,7 @@ const DatasetUploader: React.FC = () => {
   const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, login } = useUser();
-  const { setTransactions, lastUploadedFile, setLastUploadedFile } = useDataset();
+  const { setTransactions, lastUploadedFile, setLastUploadedFile, loadLargeDataset } = useDataset();
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -293,6 +293,19 @@ const DatasetUploader: React.FC = () => {
     });
   };
 
+  const handleLoadLargeDataset = () => {
+    if (!isAuthenticated) {
+      setShowSignIn(true);
+      return;
+    }
+    
+    loadLargeDataset();
+    toast({
+      title: "Large dataset loaded",
+      description: "250 transactions with varied risk levels from the past year have been loaded",
+    });
+  };
+
   return (
     <>
       <Card className="shadow-card p-5 animate-slide-in">
@@ -384,7 +397,7 @@ const DatasetUploader: React.FC = () => {
           </div>
         </div>
         
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-2">
           <div className="text-xs text-slate-500">
             <p className="mb-1"><strong>Supported formats:</strong></p>
             <div className="bg-slate-100 p-2 rounded text-xs overflow-x-auto">
@@ -417,6 +430,21 @@ const DatasetUploader: React.FC = () => {
               </div>
               <p>CSV file with transaction data (must include headers)</p>
             </div>
+          </div>
+          
+          <div className="border-t pt-3 mt-2">
+            <Button 
+              onClick={handleLoadLargeDataset} 
+              variant="outline" 
+              className="w-full flex items-center justify-center"
+              size="sm"
+            >
+              <BarChart4 className="h-4 w-4 mr-2" />
+              Load Large Dataset (250 Transactions)
+            </Button>
+            <p className="text-xs text-slate-500 mt-1 text-center">
+              Load a pre-generated dataset with 250 transactions with varied risk levels from the past year
+            </p>
           </div>
         </div>
       </Card>

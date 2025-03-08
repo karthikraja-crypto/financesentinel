@@ -1,11 +1,12 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Transaction, generateDemoTransactions } from '@/utils/demoData';
+import { generateLargeDataset } from '@/utils/largeDatasetGenerator';
 
 interface DatasetContextType {
   transactions: Transaction[];
   setTransactions: (transactions: Transaction[]) => void;
   resetToDefault: () => void;
+  loadLargeDataset: () => void;
   lastUploadedFile: string | null;
   setLastUploadedFile: (fileName: string | null) => void;
   filterTransactionsByDate: (period: 'week' | 'month' | 'year' | 'all') => Transaction[];
@@ -22,6 +23,11 @@ export const DatasetProvider = ({ children }: { children: ReactNode }) => {
   const resetToDefault = () => {
     setTransactions(generateDemoTransactions(100));
     setLastUploadedFile(null);
+  };
+
+  const loadLargeDataset = () => {
+    setTransactions(generateLargeDataset(250));
+    setLastUploadedFile("large-dataset.json");
   };
 
   const filterTransactionsByDate = (period: 'week' | 'month' | 'year' | 'all'): Transaction[] => {
@@ -73,6 +79,7 @@ export const DatasetProvider = ({ children }: { children: ReactNode }) => {
       transactions,
       setTransactions,
       resetToDefault,
+      loadLargeDataset,
       lastUploadedFile,
       setLastUploadedFile,
       filterTransactionsByDate,
