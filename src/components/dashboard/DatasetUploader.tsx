@@ -9,6 +9,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useDataset } from '@/contexts/DatasetContext';
 import SignInForm from '@/components/auth/SignInForm';
 import * as XLSX from 'xlsx';
+import { Transaction } from '@/utils/demoData';
 
 const DatasetUploader: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
@@ -26,6 +27,57 @@ const DatasetUploader: React.FC = () => {
 
   const handleDragLeave = () => {
     setIsDragging(false);
+  };
+
+  // Helper function to validate if an object is a valid Transaction
+  const isValidTransaction = (obj: any): obj is Transaction => {
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      typeof obj.id === 'string' &&
+      typeof obj.date === 'string' &&
+      typeof obj.amount === 'number' &&
+      ['deposit', 'withdrawal', 'transfer', 'payment'].includes(obj.type) &&
+      ['completed', 'pending', 'failed', 'flagged'].includes(obj.status) &&
+      typeof obj.merchant === 'string' &&
+      typeof obj.description === 'string' &&
+      typeof obj.category === 'string' &&
+      typeof obj.riskScore === 'number' &&
+      typeof obj.flagged === 'boolean'
+    );
+  };
+
+  // Helper function to validate and convert an array of unknown objects to Transaction[]
+  const validateTransactions = (data: any[]): Transaction[] => {
+    // Basic validation to ensure all required fields are present
+    const validTransactions: Transaction[] = [];
+    
+    for (const item of data) {
+      // For missing or invalid data, attempt to fix it
+      const transaction: any = {
+        id: item.id || `TX-${Math.random().toString(36).substr(2, 9)}`,
+        date: item.date || new Date().toISOString().split('T')[0],
+        amount: typeof item.amount === 'number' ? item.amount : parseFloat(item.amount) || 0,
+        type: ['deposit', 'withdrawal', 'transfer', 'payment'].includes(item.type) 
+          ? item.type 
+          : 'payment',
+        status: ['completed', 'pending', 'failed', 'flagged'].includes(item.status) 
+          ? item.status 
+          : 'completed',
+        merchant: item.merchant || 'Unknown',
+        description: item.description || item.merchant || 'Transaction',
+        category: item.category || 'Uncategorized',
+        riskScore: typeof item.riskScore === 'number' ? item.riskScore : parseInt(item.riskScore) || 0,
+        flagged: typeof item.flagged === 'boolean' ? item.flagged : false
+      };
+      
+      // Ensure the transaction now meets our criteria
+      if (isValidTransaction(transaction)) {
+        validTransactions.push(transaction);
+      }
+    }
+    
+    return validTransactions;
   };
 
   const processFile = (file: File) => {
@@ -49,11 +101,22 @@ const DatasetUploader: React.FC = () => {
             const jsonData = JSON.parse(event.target.result as string);
             
             if (Array.isArray(jsonData)) {
-              setTransactions(jsonData);
-              toast({
-                title: "Dataset loaded successfully",
-                description: `${jsonData.length} records imported from JSON`,
-              });
+              const validTransactions = validateTransactions(jsonData);
+              
+              if (validTransactions.length > 0) {
+                setTransactions(validTransactions);
+                toast({
+                  title: "Dataset loaded successfully",
+                  description: `${validTransactions.length} records imported from JSON`,
+                });
+              } else {
+                setError("No valid transactions found in the uploaded file");
+                toast({
+                  variant: "destructive",
+                  title: "Invalid dataset format",
+                  description: "No valid transactions found in the file",
+                });
+              }
             } else {
               setError("Uploaded file must contain an array of transactions");
               toast({
@@ -95,11 +158,22 @@ const DatasetUploader: React.FC = () => {
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             if (Array.isArray(jsonData) && jsonData.length > 0) {
-              setTransactions(jsonData);
-              toast({
-                title: "Dataset loaded successfully",
-                description: `${jsonData.length} records imported from Excel`,
-              });
+              const validTransactions = validateTransactions(jsonData);
+              
+              if (validTransactions.length > 0) {
+                setTransactions(validTransactions);
+                toast({
+                  title: "Dataset loaded successfully",
+                  description: `${validTransactions.length} records imported from Excel`,
+                });
+              } else {
+                setError("No valid transactions found in the uploaded file");
+                toast({
+                  variant: "destructive",
+                  title: "Invalid dataset format",
+                  description: "No valid transactions found in the file",
+                });
+              }
             } else {
               setError("Excel file appears to be empty");
               toast({
