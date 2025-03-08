@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, FileText, AlertCircle, FileExcel } from 'lucide-react';
+import { Upload, FileText, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 
@@ -35,7 +34,6 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
     setFileType(fileExtension || null);
 
     if (file.type === "application/json" || fileExtension === 'json') {
-      // Process JSON file
       const reader = new FileReader();
       
       reader.onload = (event) => {
@@ -75,7 +73,6 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
       fileExtension === 'xlsx' ||
       fileExtension === 'xls'
     ) {
-      // Process Excel file
       const reader = new FileReader();
       
       reader.onload = (event) => {
@@ -84,11 +81,9 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
             const data = new Uint8Array(event.target.result as ArrayBuffer);
             const workbook = XLSX.read(data, { type: 'array' });
             
-            // Assume first sheet
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
             
-            // Convert to JSON
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             if (Array.isArray(jsonData) && jsonData.length > 0) {
@@ -150,7 +145,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
     if (fileType === 'json') {
       return <FileText className="h-4 w-4 text-finance-blue" />;
     } else if (['xlsx', 'xls'].includes(fileType || '')) {
-      return <FileExcel className="h-4 w-4 text-green-600" />;
+      return <FileSpreadsheet className="h-4 w-4 text-green-600" />;
     }
     
     return <FileText className="h-4 w-4 text-finance-blue" />;
@@ -181,7 +176,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
               {fileType === 'json' ? (
                 <FileText className="h-4 w-4 text-finance-blue" />
               ) : ['xlsx', 'xls'].includes(fileType || '') ? (
-                <FileExcel className="h-4 w-4 text-green-600" />
+                <FileSpreadsheet className="h-4 w-4 text-green-600" />
               ) : (
                 <FileText className="h-4 w-4 text-finance-blue" />
               )}
@@ -250,7 +245,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
 ]`}
             </pre>
             <div className="flex items-center space-x-2 mb-2">
-              <FileExcel className="h-4 w-4 text-green-600" />
+              <FileSpreadsheet className="h-4 w-4 text-green-600" />
               <span className="font-medium">Excel</span>
             </div>
             <p>Excel file with transaction data (must include headers)</p>
