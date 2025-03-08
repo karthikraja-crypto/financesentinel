@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 const FlaggedTransactions = () => {
   const transactions = generateDemoTransactions(100);
   const flaggedTransactions = transactions
-    .filter(t => t.flagged && t.status === 'flagged')
+    .filter(t => t.status === 'flagged')
     .sort((a, b) => b.riskScore - a.riskScore);
   
   const { toast } = useToast();

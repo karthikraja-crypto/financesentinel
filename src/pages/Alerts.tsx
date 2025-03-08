@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 const Alerts = () => {
   const transactions = generateDemoTransactions(100);
   const alertTransactions = transactions
-    .filter(t => t.flagged && t.status !== 'flagged') // Only show potential frauds, not already flagged
+    .filter(t => t.flagged && t.status !== 'flagged') // Show only potential frauds, not already flagged
     .sort((a, b) => b.riskScore - a.riskScore);
   
   const { toast } = useToast();

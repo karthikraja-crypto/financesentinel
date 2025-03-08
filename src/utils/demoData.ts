@@ -6,7 +6,7 @@ export interface Transaction {
   date: string;
   amount: number;
   type: 'deposit' | 'withdrawal' | 'transfer' | 'payment';
-  status: 'completed' | 'pending' | 'failed';
+  status: 'completed' | 'pending' | 'failed' | 'flagged';
   merchant: string;
   description: string;
   category: string;
@@ -42,9 +42,9 @@ const randomType = (): 'deposit' | 'withdrawal' | 'transfer' | 'payment' => {
 };
 
 // Generate random status
-const statuses = ['completed', 'pending', 'failed'] as const;
-const randomStatus = (): 'completed' | 'pending' | 'failed' => {
-  const weights = [0.85, 0.1, 0.05]; // 85% completed, 10% pending, 5% failed
+const statuses = ['completed', 'pending', 'failed', 'flagged'] as const;
+const randomStatus = (): 'completed' | 'pending' | 'failed' | 'flagged' => {
+  const weights = [0.80, 0.09, 0.05, 0.06]; // 80% completed, 9% pending, 5% failed, 6% flagged
   const random = Math.random();
   let sum = 0;
   for (let i = 0; i < weights.length; i++) {
@@ -100,13 +100,14 @@ const generateTransaction = (id: number): Transaction => {
   const category = randomCategory();
   const riskScore = randomRiskScore();
   const flagged = riskScore > 70;
+  const status = flagged && Math.random() < 0.5 ? 'flagged' : randomStatus();
   
   return {
     id: `TRANS-${id.toString().padStart(5, '0')}`,
     date: randomDate(),
     amount: randomAmount(5, 1000),
     type,
-    status: randomStatus(),
+    status,
     merchant,
     description: `${type.charAt(0).toUpperCase() + type.slice(1)} - ${merchant}`,
     category,
