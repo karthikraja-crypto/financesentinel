@@ -8,6 +8,9 @@ interface DatasetContextType {
   resetToDefault: () => void;
   lastUploadedFile: string | null;
   setLastUploadedFile: (fileName: string | null) => void;
+  filterTransactionsByDate: (period: 'week' | 'month' | 'year' | 'all') => Transaction[];
+  flagTransaction: (transactionId: string) => void;
+  dismissAlert: (transactionId: string) => void;
 }
 
 const DatasetContext = createContext<DatasetContextType | undefined>(undefined);
@@ -21,13 +24,60 @@ export const DatasetProvider = ({ children }: { children: ReactNode }) => {
     setLastUploadedFile(null);
   };
 
+  const filterTransactionsByDate = (period: 'week' | 'month' | 'year' | 'all'): Transaction[] => {
+    if (period === 'all') return transactions;
+    
+    const now = new Date();
+    const startDate = new Date();
+    
+    switch (period) {
+      case 'week':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+    }
+    
+    return transactions.filter(transaction => {
+      const transactionDate = new Date(transaction.date);
+      return transactionDate >= startDate && transactionDate <= now;
+    });
+  };
+
+  const flagTransaction = (transactionId: string) => {
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === transactionId 
+          ? { ...t, status: 'flagged', flagged: true } 
+          : t
+      )
+    );
+  };
+
+  const dismissAlert = (transactionId: string) => {
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === transactionId 
+          ? { ...t, flagged: false } 
+          : t
+      )
+    );
+  };
+
   return (
     <DatasetContext.Provider value={{
       transactions,
       setTransactions,
       resetToDefault,
       lastUploadedFile,
-      setLastUploadedFile
+      setLastUploadedFile,
+      filterTransactionsByDate,
+      flagTransaction,
+      dismissAlert
     }}>
       {children}
     </DatasetContext.Provider>

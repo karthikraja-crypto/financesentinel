@@ -1,3 +1,4 @@
+
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AlertTriangle, ShieldAlert, Flag, CheckCircle } from 'lucide-react';
@@ -10,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDataset } from '@/contexts/DatasetContext';
 
 const Alerts = () => {
-  const { transactions } = useDataset();
+  const { transactions, flagTransaction, dismissAlert } = useDataset();
   const alertTransactions = transactions
     .filter(t => t.flagged && t.status !== 'flagged') // Show only potential frauds, not already flagged
     .sort((a, b) => b.riskScore - a.riskScore);
@@ -19,13 +20,7 @@ const Alerts = () => {
   const navigate = useNavigate();
   
   const handleFlagTransaction = (transactionId: string) => {
-    // Find the transaction by ID and update its status to 'flagged'
-    const updatedTransactions = transactions.map(t =>
-      t.id === transactionId ? { ...t, status: 'flagged' } : t
-    );
-    
-    // Update the transactions in the DatasetContext
-    // setTransactions(updatedTransactions); // Ensure setTransactions is available from DatasetContext
+    flagTransaction(transactionId);
     
     toast({
       title: "Transaction Flagged",
@@ -34,13 +29,7 @@ const Alerts = () => {
   };
   
   const handleDismissAlert = (transactionId: string) => {
-    // Find the transaction by ID and remove the flagged status
-    const updatedTransactions = transactions.map(t =>
-      t.id === transactionId ? { ...t, flagged: false } : t
-    );
-    
-    // Update the transactions in the DatasetContext
-    // setTransactions(updatedTransactions); // Ensure setTransactions is available from DatasetContext
+    dismissAlert(transactionId);
     
     toast({
       title: "Alert Dismissed",
@@ -99,7 +88,18 @@ const Alerts = () => {
                     <span>Risk Level</span>
                     <span className="font-medium">{transaction.riskScore}%</span>
                   </div>
-                  {/* You might want to add a progress bar here as well */}
+                  {/* Added progress bar for consistency */}
+                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${
+                        transaction.riskScore > 75 ? "bg-red-500" : 
+                        transaction.riskScore > 50 ? "bg-orange-500" : 
+                        transaction.riskScore > 25 ? "bg-yellow-500" : 
+                        "bg-green-500"
+                      }`}
+                      style={{ width: `${transaction.riskScore}%` }}
+                    ></div>
+                  </div>
                 </div>
                 
                 <div className="flex justify-end gap-2">

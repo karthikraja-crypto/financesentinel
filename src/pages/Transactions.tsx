@@ -1,13 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import TransactionTable from '@/components/dashboard/TransactionTable';
 import DatasetUploader from '@/components/dashboard/DatasetUploader';
 import CurrencySelector from '@/components/dashboard/CurrencySelector';
+import DateFilterSelector from '@/components/dashboard/DateFilterSelector';
 import { useDataset } from '@/contexts/DatasetContext';
+import { Transaction } from '@/utils/demoData';
 
 const Transactions = () => {
   const { transactions } = useDataset();
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions);
+  
+  const handleFilterChange = (filtered: Transaction[]) => {
+    setFilteredTransactions(filtered);
+  };
   
   return (
     <DashboardLayout>
@@ -19,12 +26,16 @@ const Transactions = () => {
           </div>
         </div>
         
+        <div className="mb-4">
+          <DateFilterSelector onFilterChange={handleFilterChange} />
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           <div className="lg:col-span-1">
             <DatasetUploader />
           </div>
           <div className="lg:col-span-3">
-            <TransactionTable transactions={transactions} />
+            <TransactionTable transactions={filteredTransactions} />
           </div>
         </div>
       </div>

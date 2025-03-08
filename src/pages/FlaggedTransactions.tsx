@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AlertTriangle, CheckCircle, Flag, ShieldAlert } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { useDataset } from '@/contexts/DatasetContext';
+import { sendFraudReportEmail } from '@/utils/emailService';
 
 const FlaggedTransactions = () => {
   const { transactions } = useDataset();
+  const [isReporting, setIsReporting] = useState<string | null>(null);
   const flaggedTransactions = transactions
     .filter(t => t.status === 'flagged')
     .sort((a, b) => b.riskScore - a.riskScore);
@@ -27,12 +29,30 @@ const FlaggedTransactions = () => {
     return 'bg-yellow-500';
   };
   
-  const handleReportFraud = (transactionId: string) => {
-    toast({
-      title: "Fraud Report Submitted",
-      description: `Transaction ${transactionId} has been reported to authorities.`,
-      variant: "destructive",
-    });
+  const handleReportFraud = async (transactionId: string) => {
+    setIsReporting(transactionId);
+    
+    // Find the transaction details
+    const transaction = transactions.find(t => t.id === transactionId);
+    
+    try {
+      // Send the fraud report email
+      await sendFraudReportEmail(transactionId, transaction);
+      
+      toast({
+        title: "Fraud Report Submitted",
+        description: "Transaction has been reported and an email notification has been sent.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Reporting Fraud",
+        description: "There was an error submitting the fraud report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReporting(null);
+    }
   };
   
   const handleBackToAlerts = () => {
@@ -93,10 +113,11 @@ const FlaggedTransactions = () => {
                   <Button 
                     variant="destructive" 
                     size="sm"
+                    disabled={isReporting === transaction.id}
                     onClick={() => handleReportFraud(transaction.id)}
                   >
                     <Flag className="h-4 w-4 mr-1" />
-                    Report Fraud
+                    {isReporting === transaction.id ? 'Sending...' : 'Report Fraud'}
                   </Button>
                 </div>
               </Card>
