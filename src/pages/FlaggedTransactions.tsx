@@ -2,7 +2,7 @@
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { generateDemoTransactions } from '@/utils/demoData';
-import { AlertTriangle, CheckCircle, Flag, ArrowRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Flag, ShieldAlert } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 
-const Alerts = () => {
+const FlaggedTransactions = () => {
   const transactions = generateDemoTransactions(100);
-  const alertTransactions = transactions
-    .filter(t => t.flagged && t.status !== 'flagged') // Only show potential frauds, not already flagged
+  const flaggedTransactions = transactions
+    .filter(t => t.flagged && t.status === 'flagged')
     .sort((a, b) => b.riskScore - a.riskScore);
   
   const { toast } = useToast();
@@ -27,60 +27,38 @@ const Alerts = () => {
     return 'bg-yellow-500';
   };
   
-  const handleApprove = (transactionId: string) => {
+  const handleReportFraud = (transactionId: string) => {
     toast({
-      title: "Transaction Approved",
-      description: `Transaction ${transactionId} has been marked as legitimate.`,
-    });
-  };
-  
-  const handleFlagAsFraud = (transactionId: string) => {
-    toast({
-      title: "Transaction Flagged as Fraud",
-      description: `Transaction ${transactionId} has been confirmed as fraudulent and will be reported.`,
+      title: "Fraud Report Submitted",
+      description: `Transaction ${transactionId} has been reported to authorities.`,
       variant: "destructive",
     });
-    
-    // Navigate to flagged transactions page
-    setTimeout(() => {
-      navigate('/flagged-transactions');
-    }, 1500);
   };
   
-  const handleViewFlagged = () => {
-    navigate('/flagged-transactions');
+  const handleBackToAlerts = () => {
+    navigate('/alerts');
   };
   
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <div className="flex justify-between items-start mb-2">
-          <h1 className="text-2xl font-semibold text-slate-900">Fraud Alerts</h1>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleViewFlagged}
-          >
-            <Flag className="h-4 w-4 mr-2" />
-            View Flagged Transactions
-          </Button>
-        </div>
-        <p className="text-slate-500 mb-6">Review and manage potentially fraudulent transactions</p>
+        <h1 className="text-2xl font-semibold text-slate-900 mb-2">Flagged Transactions</h1>
+        <p className="text-slate-500 mb-6">Review and manage transactions that have been flagged as fraudulent</p>
         
-        {alertTransactions.length > 0 ? (
+        {flaggedTransactions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {alertTransactions.map(transaction => (
+            {flaggedTransactions.map(transaction => (
               <Card key={transaction.id} className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <ShieldAlert className="h-4 w-4 text-red-500" />
                       <h3 className="font-medium">{transaction.merchant}</h3>
                     </div>
                     <p className="text-sm text-slate-500 mt-1">{transaction.description}</p>
                   </div>
-                  <Badge variant={transaction.riskScore >= 90 ? "destructive" : "outline"} className="ml-2">
-                    {transaction.riskScore}% Risk
+                  <Badge variant="destructive" className="ml-2">
+                    Flagged
                   </Badge>
                 </div>
                 
@@ -113,21 +91,12 @@ const Alerts = () => {
                 
                 <div className="flex justify-end gap-2">
                   <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleApprove(transaction.id)}
-                    className="text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => handleFlagAsFraud(transaction.id)}
+                    onClick={() => handleReportFraud(transaction.id)}
                   >
                     <Flag className="h-4 w-4 mr-1" />
-                    Flag as Fraud
+                    Report Fraud
                   </Button>
                 </div>
               </Card>
@@ -138,16 +107,16 @@ const Alerts = () => {
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-1">No alerts found</h3>
-            <p className="text-slate-500">All transactions appear to be legitimate</p>
+            <h3 className="text-lg font-medium text-slate-900 mb-1">No flagged transactions</h3>
+            <p className="text-slate-500">No transactions have been flagged as fraudulent</p>
             <Button 
               variant="outline" 
               size="sm"
               className="mt-4"
-              onClick={handleViewFlagged}
+              onClick={handleBackToAlerts}
             >
-              <ArrowRight className="h-4 w-4 mr-1" />
-              View Flagged Transactions
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              View Fraud Alerts
             </Button>
           </div>
         )}
@@ -156,4 +125,4 @@ const Alerts = () => {
   );
 };
 
-export default Alerts;
+export default FlaggedTransactions;

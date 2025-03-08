@@ -1,6 +1,6 @@
 
-import React, { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { ReactNode, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
@@ -11,17 +11,23 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown
+  ChevronDown,
+  Flag
 } from "lucide-react";
 import { cn } from '@/lib/utils';
+import { useUser } from '@/contexts/UserContext';
+import UserProfile from '@/components/auth/UserProfile';
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useUser();
   
   // Toggle sidebar on mobile
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -32,8 +38,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Transactions', icon: <CreditCard className="h-5 w-5" />, href: '/transactions' },
     { name: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, href: '/analytics' },
     { name: 'Fraud Alerts', icon: <AlertTriangle className="h-5 w-5" />, href: '/alerts' },
+    { name: 'Flagged Transactions', icon: <Flag className="h-5 w-5" />, href: '/flagged-transactions' },
     { name: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/settings' },
   ];
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setSidebarOpen(false);
+  };
+  
+  const toggleUserProfile = () => {
+    setShowUserProfile(!showUserProfile);
+  };
   
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -73,13 +90,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {/* Right side nav items */}
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="relative">
-                <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-1">
-                  <span>Demo Account</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="hidden md:flex items-center gap-1"
+                  onClick={toggleUserProfile}
+                >
+                  <span>{isAuthenticated ? user?.name : "Demo Account"}</span>
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </div>
-              <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center">
-                <span className="text-sm font-medium text-slate-700">DA</span>
+              <div 
+                className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center cursor-pointer"
+                onClick={toggleUserProfile}
+              >
+                <span className="text-sm font-medium text-slate-700">
+                  {isAuthenticated ? user?.name.charAt(0) : "D"}
+                </span>
               </div>
             </div>
           </div>
@@ -105,6 +132,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       ? "bg-finance-blue text-white"
                       : "text-slate-700 hover:bg-slate-100"
                   )}
+                  onClick={() => setSidebarOpen(false)}
                 >
                   {item.icon}
                   <span className="ml-3">{item.name}</span>
@@ -114,7 +142,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
           
           <div className="p-4 border-t border-slate-200">
-            <Button variant="outline" size="sm" className="w-full justify-start text-slate-700">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full justify-start text-slate-700"
+              onClick={handleLogout}
+            >
               <LogOut className="h-4 w-4 mr-2" />
               Log out
             </Button>
@@ -136,6 +169,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
+      
+      {/* User Profile Modal */}
+      {showUserProfile && user && (
+        <UserProfile 
+          user={user} 
+          onClose={toggleUserProfile} 
+          onLogout={handleLogout} 
+        />
+      )}
     </div>
   );
 };

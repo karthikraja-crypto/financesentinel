@@ -1,9 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, FileText, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { Upload, FileText, AlertCircle, FileSpreadsheet, FileImage, Database } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from '@/contexts/UserContext';
+import SignInForm from '@/components/auth/SignInForm';
 import * as XLSX from 'xlsx';
 
 interface DatasetUploaderProps {
@@ -15,7 +18,9 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
+  const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
+  const { isAuthenticated, login } = useUser();
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -27,6 +32,11 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
   };
 
   const processFile = (file: File) => {
+    if (!isAuthenticated) {
+      setShowSignIn(true);
+      return;
+    }
+    
     setFileName(file.name);
     setError(null);
 
@@ -71,7 +81,8 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
       file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || 
       file.type === "application/vnd.ms-excel" ||
       fileExtension === 'xlsx' ||
-      fileExtension === 'xls'
+      fileExtension === 'xls' ||
+      fileExtension === 'csv'
     ) {
       const reader = new FileReader();
       
@@ -112,12 +123,55 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
       };
 
       reader.readAsArrayBuffer(file);
+    } else if (
+      file.type === "text/csv" ||
+      fileExtension === 'csv'
+    ) {
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        try {
+          if (event.target?.result) {
+            const csvData = event.target.result as string;
+            const workbook = XLSX.read(csvData, { type: 'binary' });
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (Array.isArray(jsonData) && jsonData.length > 0) {
+              onDatasetUploaded(jsonData);
+              toast({
+                title: "Dataset loaded successfully",
+                description: `${jsonData.length} records imported from CSV`,
+              });
+            } else {
+              setError("CSV file appears to be empty");
+              toast({
+                variant: "destructive",
+                title: "Empty dataset",
+                description: "The CSV file doesn't contain usable data",
+              });
+            }
+          }
+        } catch (err) {
+          setError("Failed to parse CSV file");
+          toast({
+            variant: "destructive",
+            title: "Invalid CSV file",
+            description: "The file could not be processed",
+          });
+        }
+      };
+
+      reader.readAsBinaryString(file);
     } else {
-      setError("Only JSON and Excel files are supported");
+      setError("Only JSON, Excel, and CSV files are supported");
       toast({
         variant: "destructive",
         title: "Unsupported file type",
-        description: "Please upload a JSON or Excel file",
+        description: "Please upload a JSON, Excel, or CSV file",
       });
     }
   };
@@ -146,92 +200,123 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
       return <FileText className="h-4 w-4 text-finance-blue" />;
     } else if (['xlsx', 'xls'].includes(fileType || '')) {
       return <FileSpreadsheet className="h-4 w-4 text-green-600" />;
+    } else if (fileType === 'csv') {
+      return <Database className="h-4 w-4 text-amber-600" />;
     }
     
     return <FileText className="h-4 w-4 text-finance-blue" />;
   };
 
+  const handleUserSignedIn = (userData: { email: string; name: string; phone: string; }) => {
+    login(userData);
+    setShowSignIn(false);
+    
+    toast({
+      title: "Signed In",
+      description: "You can now upload your custom dataset",
+    });
+  };
+
   return (
-    <Card className="shadow-card p-5 animate-slide-in">
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-900">Custom Dataset</h3>
-        <p className="text-sm text-slate-500">Upload your transaction data in JSON or Excel format</p>
-      </div>
-      
-      <div 
-        className={`border-2 border-dashed rounded-lg p-6 text-center ${
-          isDragging ? 'border-finance-blue bg-blue-50' : 'border-slate-300'
-        } transition-colors`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <div className="p-3 bg-slate-100 rounded-full">
-            {getFileIcon()}
-          </div>
-          
-          {fileName ? (
-            <div className="flex items-center space-x-2">
-              {fileType === 'json' ? (
-                <FileText className="h-4 w-4 text-finance-blue" />
-              ) : ['xlsx', 'xls'].includes(fileType || '') ? (
-                <FileSpreadsheet className="h-4 w-4 text-green-600" />
+    <>
+      <Card className="shadow-card p-5 animate-slide-in">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-slate-900">Custom Dataset</h3>
+          <p className="text-sm text-slate-500">Upload your transaction data in JSON, Excel, or CSV format</p>
+        </div>
+        
+        <div 
+          className={`border-2 border-dashed rounded-lg p-6 text-center ${
+            isDragging ? 'border-finance-blue bg-blue-50' : 'border-slate-300'
+          } transition-colors`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <div className="p-3 bg-slate-100 rounded-full">
+              {getFileIcon()}
+            </div>
+            
+            {fileName ? (
+              <div className="flex items-center space-x-2">
+                {fileType === 'json' ? (
+                  <FileText className="h-4 w-4 text-finance-blue" />
+                ) : ['xlsx', 'xls'].includes(fileType || '') ? (
+                  <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                ) : fileType === 'csv' ? (
+                  <Database className="h-4 w-4 text-amber-600" />
+                ) : (
+                  <FileText className="h-4 w-4 text-finance-blue" />
+                )}
+                <span className="text-sm font-medium text-slate-700">{fileName}</span>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-slate-700">
+                  Drag and drop your file here, or click to browse
+                </p>
+                <p className="text-xs text-slate-500">
+                  Supported formats: JSON, Excel (.xlsx, .xls), CSV
+                </p>
+                {!isAuthenticated && (
+                  <p className="text-xs text-amber-600 font-medium">
+                    Sign in required before uploading
+                  </p>
+                )}
+              </>
+            )}
+            
+            {error && (
+              <div className="flex items-center space-x-2 text-red-600 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                <span>{error}</span>
+              </div>
+            )}
+            
+            <div className="mt-2">
+              {isAuthenticated ? (
+                <label htmlFor="file-upload">
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    accept=".json,.xlsx,.xls,.csv,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="cursor-pointer"
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                  >
+                    Browse files
+                  </Button>
+                </label>
               ) : (
-                <FileText className="h-4 w-4 text-finance-blue" />
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowSignIn(true)}
+                >
+                  Sign in to upload
+                </Button>
               )}
-              <span className="text-sm font-medium text-slate-700">{fileName}</span>
             </div>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-slate-700">
-                Drag and drop your file here, or click to browse
-              </p>
-              <p className="text-xs text-slate-500">
-                Supported formats: JSON, Excel (.xlsx, .xls)
-              </p>
-            </>
-          )}
-          
-          {error && (
-            <div className="flex items-center space-x-2 text-red-600 text-sm">
-              <AlertCircle className="h-4 w-4" />
-              <span>{error}</span>
-            </div>
-          )}
-          
-          <div className="mt-2">
-            <label htmlFor="file-upload">
-              <Input
-                id="file-upload"
-                type="file"
-                accept=".json,.xlsx,.xls,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={() => document.getElementById('file-upload')?.click()}
-              >
-                Browse files
-              </Button>
-            </label>
           </div>
         </div>
-      </div>
-      
-      <div className="mt-4">
-        <div className="text-xs text-slate-500">
-          <p className="mb-1"><strong>Supported formats:</strong></p>
-          <div className="bg-slate-100 p-2 rounded text-xs overflow-x-auto">
-            <div className="flex items-center space-x-2 mb-2">
-              <FileText className="h-4 w-4 text-finance-blue" />
-              <span className="font-medium">JSON</span>
-            </div>
-            <pre className="mb-3">
+        
+        <div className="mt-4">
+          <div className="text-xs text-slate-500">
+            <p className="mb-1"><strong>Supported formats:</strong></p>
+            <div className="bg-slate-100 p-2 rounded text-xs overflow-x-auto">
+              <div className="flex items-center space-x-2 mb-2">
+                <FileText className="h-4 w-4 text-finance-blue" />
+                <span className="font-medium">JSON</span>
+              </div>
+              <pre className="mb-3">
 {`[
   {
     "id": "TX123456",
@@ -243,16 +328,31 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
   },
   ...
 ]`}
-            </pre>
-            <div className="flex items-center space-x-2 mb-2">
-              <FileSpreadsheet className="h-4 w-4 text-green-600" />
-              <span className="font-medium">Excel</span>
+              </pre>
+              <div className="flex items-center space-x-2 mb-2">
+                <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                <span className="font-medium">Excel</span>
+              </div>
+              <p className="mb-3">Excel file with transaction data (must include headers)</p>
+              
+              <div className="flex items-center space-x-2 mb-2">
+                <Database className="h-4 w-4 text-amber-600" />
+                <span className="font-medium">CSV</span>
+              </div>
+              <p>CSV file with transaction data (must include headers)</p>
             </div>
-            <p>Excel file with transaction data (must include headers)</p>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+      
+      {/* Sign In Modal */}
+      {showSignIn && (
+        <SignInForm 
+          onSignIn={handleUserSignedIn}
+          onCancel={() => setShowSignIn(false)}
+        />
+      )}
+    </>
   );
 };
 
