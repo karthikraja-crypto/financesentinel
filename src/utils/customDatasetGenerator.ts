@@ -1,43 +1,28 @@
+
 import { Transaction } from './demoData';
+import { CustomDatasetOptions } from '@/contexts/DatasetContext';
 
 /**
- * Generate a large dataset of transactions with diverse risk levels and dates within the past year
- * @param count Number of transactions to generate (default: 250)
- * @param customRiskDistribution Optional custom risk distribution percentages
+ * Generate a customized dataset based on provided options
+ * @param options Customization options for the dataset
  * @returns Array of Transaction objects
  */
-export const generateLargeDataset = (
-  count: number = 250, 
-  customRiskDistribution?: {
-    lowRisk?: number,
-    mediumRisk?: number,
-    highRisk?: number,
-    criticalRisk?: number
-  }
-): Transaction[] => {
+export const generateCustomDataset = (options: CustomDatasetOptions): Transaction[] => {
+  const {
+    count = 200,
+    riskLevels = { low: 50, medium: 20, high: 20, critical: 10 },
+    timeRange,
+    includeFlags = true
+  } = options;
+  
   const transactions: Transaction[] = [];
-  const now = new Date();
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(now.getFullYear() - 1);
   
-  // Default risk distribution
-  const riskDistribution = {
-    lowRisk: customRiskDistribution?.lowRisk ?? 50,      // Default 50%
-    mediumRisk: customRiskDistribution?.mediumRisk ?? 20, // Default 20%
-    highRisk: customRiskDistribution?.highRisk ?? 20,     // Default 20%
-    criticalRisk: customRiskDistribution?.criticalRisk ?? 10 // Default 10%
-  };
-  
-  // Normalize distribution if sum is not 100
-  const totalPercentage = riskDistribution.lowRisk + riskDistribution.mediumRisk + 
-                          riskDistribution.highRisk + riskDistribution.criticalRisk;
-  
-  if (totalPercentage !== 100) {
-    const factor = 100 / totalPercentage;
-    riskDistribution.lowRisk *= factor;
-    riskDistribution.mediumRisk *= factor;
-    riskDistribution.highRisk *= factor;
-    riskDistribution.criticalRisk *= factor;
+  // Set date range
+  const endDate = timeRange?.endDate || new Date();
+  const startDate = timeRange?.startDate || new Date();
+  if (!timeRange?.startDate) {
+    // Default to one year ago if not specified
+    startDate.setFullYear(endDate.getFullYear() - 1);
   }
   
   // List of merchants
@@ -69,41 +54,50 @@ export const generateLargeDataset = (
     'completed', 'pending', 'failed', 'flagged'
   ];
   
-  // Generate transactions with varied risk levels
-  for (let i = 0; i < count; i++) {
-    // Generate random date within the past year
+  // Calculate how many transactions for each risk level
+  const lowCount = Math.round(count * (riskLevels.low || 50) / 100);
+  const mediumCount = Math.round(count * (riskLevels.medium || 20) / 100);
+  const highCount = Math.round(count * (riskLevels.high || 20) / 100);
+  const criticalCount = count - lowCount - mediumCount - highCount;
+  
+  // Generate transactions for each risk level
+  let currentId = 0;
+  
+  // Low risk transactions (0-25)
+  for (let i = 0; i < lowCount; i++) {
+    transactions.push(generateTransactionWithRisk(currentId++, 0, 25, startDate, endDate));
+  }
+  
+  // Medium risk transactions (26-50)
+  for (let i = 0; i < mediumCount; i++) {
+    transactions.push(generateTransactionWithRisk(currentId++, 26, 50, startDate, endDate));
+  }
+  
+  // High risk transactions (51-75)
+  for (let i = 0; i < highCount; i++) {
+    transactions.push(generateTransactionWithRisk(currentId++, 51, 75, startDate, endDate));
+  }
+  
+  // Critical risk transactions (76-100)
+  for (let i = 0; i < criticalCount; i++) {
+    transactions.push(generateTransactionWithRisk(currentId++, 76, 100, startDate, endDate));
+  }
+  
+  // Helper function to generate a transaction with a risk score in a given range
+  function generateTransactionWithRisk(id: number, minRisk: number, maxRisk: number, startDate: Date, endDate: Date): Transaction {
+    // Generate random date within range
     const randomDate = new Date(
-      oneYearAgo.getTime() + Math.random() * (now.getTime() - oneYearAgo.getTime())
+      startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())
     );
     
-    // Generate risk score based on distribution
-    let riskScore: number;
+    // Generate risk score within provided range
+    const riskScore = minRisk + Math.floor(Math.random() * (maxRisk - minRisk + 1));
     
-    const lowRiskThreshold = riskDistribution.lowRisk;
-    const mediumRiskThreshold = lowRiskThreshold + riskDistribution.mediumRisk;
-    const highRiskThreshold = mediumRiskThreshold + riskDistribution.highRisk;
-    
-    const randomPercentile = Math.random() * 100;
-    
-    if (randomPercentile < lowRiskThreshold) {
-      // Low risk (0-25)
-      riskScore = Math.floor(Math.random() * 26);
-    } else if (randomPercentile < mediumRiskThreshold) {
-      // Medium risk (26-50)
-      riskScore = 26 + Math.floor(Math.random() * 25);
-    } else if (randomPercentile < highRiskThreshold) {
-      // High risk (51-75)
-      riskScore = 51 + Math.floor(Math.random() * 25);
-    } else {
-      // Critical risk (76-100)
-      riskScore = 76 + Math.floor(Math.random() * 25);
-    }
-    
-    // Calculate suspicious factors for high-risk transactions
+    // Higher risk may have suspicious merchant and unusual amount
     const isForeignMerchant = riskScore > 60 && Math.random() > 0.7;
     const isUnusualAmount = riskScore > 70 && Math.random() > 0.6;
     
-    // Generate amount (higher risk may have unusual amounts)
+    // Generate amount
     let amount: number;
     if (isUnusualAmount) {
       amount = Math.round(Math.random() * 10000 * 100) / 100; // Unusual high amount
@@ -111,30 +105,30 @@ export const generateLargeDataset = (
       amount = Math.round(Math.random() * 1000 * 100) / 100; // Normal amount
     }
     
-    // Select merchant (higher risk may have suspicious merchants)
+    // Select merchant
     const merchantIndex = isForeignMerchant 
       ? Math.floor(Math.random() * 6) + 30 // Select from suspicious merchants
       : Math.floor(Math.random() * 30);    // Select from normal merchants
     
     const merchant = merchants[merchantIndex];
     
-    // Select category (higher risk may have suspicious categories)
+    // Select category
     const categoryIndex = riskScore > 70
       ? Math.floor(Math.random() * 6) + 15 // Select from suspicious categories
       : Math.floor(Math.random() * 15);    // Select from normal categories
     
     const category = categories[categoryIndex];
     
-    // Transaction type (weighted by risk)
+    // Transaction type
     const typeIndex = riskScore > 75
       ? Math.floor(Math.random() * 2) + 1 // Higher chance of withdrawal or transfer for high risk
       : Math.floor(Math.random() * 4);
     
     const type = types[typeIndex];
     
-    // Status (higher risk may be flagged)
+    // Status
     let status: 'completed' | 'pending' | 'failed' | 'flagged';
-    if (riskScore > 70 && Math.random() > 0.5) {
+    if (includeFlags && riskScore > 70 && Math.random() > 0.5) {
       status = 'flagged';
     } else if (riskScore > 50 && Math.random() > 0.7) {
       status = 'pending';
@@ -145,8 +139,8 @@ export const generateLargeDataset = (
     }
     
     // Create transaction
-    const transaction: Transaction = {
-      id: `TX-${i.toString().padStart(6, '0')}`,
+    return {
+      id: `TX-${id.toString().padStart(6, '0')}`,
       date: randomDate.toISOString().split('T')[0],
       amount,
       type,
@@ -155,10 +149,8 @@ export const generateLargeDataset = (
       description: `${type.charAt(0).toUpperCase() + type.slice(1)} - ${merchant}`,
       category,
       riskScore,
-      flagged: riskScore > 70 || status === 'flagged'
+      flagged: includeFlags && (riskScore > 70 || status === 'flagged')
     };
-    
-    transactions.push(transaction);
   }
   
   // Sort by date (newest first)
