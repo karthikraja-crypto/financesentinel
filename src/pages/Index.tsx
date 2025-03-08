@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -9,7 +8,6 @@ import AnalyticsCard from '@/components/dashboard/AnalyticsCard';
 import CurrencySelector from '@/components/dashboard/CurrencySelector';
 import DatasetUploader from '@/components/dashboard/DatasetUploader';
 import { 
-  generateDemoTransactions, 
   calculateAccountSummary, 
   generateDailyTotals, 
   generateTransactionsByType,
@@ -19,6 +17,7 @@ import {
 import { formatCurrency } from '@/utils/analytics';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useDataset } from '@/contexts/DatasetContext';
 import { ArrowUpRight, TrendingUp, BarChart3, PieChart as PieChartIcon, AlertTriangle } from 'lucide-react';
 
 // Define types for the tooltip props
@@ -47,26 +46,26 @@ interface RiskTooltipProps {
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [dailyTotals, setDailyTotals] = useState<any[]>([]);
   const [transactionsByType, setTransactionsByType] = useState<any[]>([]);
   const [riskDistribution, setRiskDistribution] = useState<any[]>([]);
   const { formatAmount } = useCurrency();
+  const { transactions } = useDataset();
   
-  // Load demo data
+  // Load data based on current transactions
   useEffect(() => {
     const loadData = async () => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Simulate API call delay if first load
+      if (isLoading) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
       
-      const demoTransactions = generateDemoTransactions(100);
-      const accountSummary = calculateAccountSummary(demoTransactions);
-      const dailyTransactionTotals = generateDailyTotals(demoTransactions);
-      const transactionTypeCounts = generateTransactionsByType(demoTransactions);
-      const riskScoreDistribution = generateRiskDistribution(demoTransactions);
+      const accountSummary = calculateAccountSummary(transactions);
+      const dailyTransactionTotals = generateDailyTotals(transactions);
+      const transactionTypeCounts = generateTransactionsByType(transactions);
+      const riskScoreDistribution = generateRiskDistribution(transactions);
       
-      setTransactions(demoTransactions);
       setSummary(accountSummary);
       setDailyTotals(dailyTransactionTotals);
       setTransactionsByType(transactionTypeCounts);
@@ -75,20 +74,7 @@ const Index = () => {
     };
     
     loadData();
-  }, []);
-
-  const handleDatasetUploaded = (newTransactions: Transaction[]) => {
-    setTransactions(newTransactions);
-    const accountSummary = calculateAccountSummary(newTransactions);
-    const dailyTransactionTotals = generateDailyTotals(newTransactions);
-    const transactionTypeCounts = generateTransactionsByType(newTransactions);
-    const riskScoreDistribution = generateRiskDistribution(newTransactions);
-    
-    setSummary(accountSummary);
-    setDailyTotals(dailyTransactionTotals);
-    setTransactionsByType(transactionTypeCounts);
-    setRiskDistribution(riskScoreDistribution);
-  };
+  }, [transactions, isLoading]);
   
   // Chart configs
   const COLORS = ['#2D7FF9', '#F45B69', '#10B981', '#6366F1'];
@@ -162,7 +148,7 @@ const Index = () => {
         
         {/* Dataset Uploader */}
         <div className="lg:col-span-1">
-          <DatasetUploader onDatasetUploaded={handleDatasetUploaded} />
+          <DatasetUploader />
         </div>
       </div>
       

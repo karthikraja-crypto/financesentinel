@@ -1,26 +1,27 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import AnalyticsCard from '@/components/dashboard/AnalyticsCard';
 import CurrencySelector from '@/components/dashboard/CurrencySelector';
 import DatasetUploader from '@/components/dashboard/DatasetUploader';
-import { generateDemoTransactions, generateTransactionsByType, generateRiskDistribution } from '@/utils/demoData';
+import { generateTransactionsByType, generateRiskDistribution } from '@/utils/demoData';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { Transaction } from '@/utils/demoData';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useDataset } from '@/contexts/DatasetContext';
 
 const Analytics = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(generateDemoTransactions(100));
-  const transactionsByType = generateTransactionsByType(transactions);
-  const riskDistribution = generateRiskDistribution(transactions);
+  const [transactionsByType, setTransactionsByType] = useState<any[]>([]);
+  const [riskDistribution, setRiskDistribution] = useState<any[]>([]);
   const { formatAmount } = useCurrency();
+  const { transactions } = useDataset();
+  
+  useEffect(() => {
+    setTransactionsByType(generateTransactionsByType(transactions));
+    setRiskDistribution(generateRiskDistribution(transactions));
+  }, [transactions]);
   
   const COLORS = ['#2D7FF9', '#F45B69', '#10B981', '#6366F1'];
   const RISK_COLORS = ['#10B981', '#84CC16', '#FACC15', '#F59E0B', '#F45B69'];
-  
-  const handleDatasetUploaded = (newTransactions: Transaction[]) => {
-    setTransactions(newTransactions);
-  };
   
   return (
     <DashboardLayout>
@@ -34,7 +35,7 @@ const Analytics = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           <div className="lg:col-span-1">
-            <DatasetUploader onDatasetUploaded={handleDatasetUploaded} />
+            <DatasetUploader />
           </div>
           
           <div className="lg:col-span-3">

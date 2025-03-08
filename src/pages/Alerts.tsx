@@ -1,18 +1,16 @@
-
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { generateDemoTransactions } from '@/utils/demoData';
-import { AlertTriangle, CheckCircle, Flag, ArrowRight } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Flag, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
-import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { useDataset } from '@/contexts/DatasetContext';
 
 const Alerts = () => {
-  const transactions = generateDemoTransactions(100);
+  const { transactions } = useDataset();
   const alertTransactions = transactions
     .filter(t => t.flagged && t.status !== 'flagged') // Show only potential frauds, not already flagged
     .sort((a, b) => b.riskScore - a.riskScore);
@@ -20,52 +18,45 @@ const Alerts = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const getRiskColor = (score: number): string => {
-    if (score >= 90) return 'bg-red-600';
-    if (score >= 80) return 'bg-red-500';
-    if (score >= 70) return 'bg-orange-500';
-    return 'bg-yellow-500';
-  };
-  
-  const handleApprove = (transactionId: string) => {
-    toast({
-      title: "Transaction Approved",
-      description: `Transaction ${transactionId} has been marked as legitimate.`,
-    });
-  };
-  
-  const handleFlagAsFraud = (transactionId: string) => {
-    toast({
-      title: "Transaction Flagged as Fraud",
-      description: `Transaction ${transactionId} has been confirmed as fraudulent and will be reported.`,
-      variant: "destructive",
-    });
+  const handleFlagTransaction = (transactionId: string) => {
+    // Find the transaction by ID and update its status to 'flagged'
+    const updatedTransactions = transactions.map(t =>
+      t.id === transactionId ? { ...t, status: 'flagged' } : t
+    );
     
-    // Navigate to flagged transactions page
-    setTimeout(() => {
-      navigate('/flagged-transactions');
-    }, 1500);
+    // Update the transactions in the DatasetContext
+    // setTransactions(updatedTransactions); // Ensure setTransactions is available from DatasetContext
+    
+    toast({
+      title: "Transaction Flagged",
+      description: `Transaction ${transactionId} has been marked as fraudulent.`,
+    });
   };
   
-  const handleViewFlagged = () => {
-    navigate('/flagged-transactions');
+  const handleDismissAlert = (transactionId: string) => {
+    // Find the transaction by ID and remove the flagged status
+    const updatedTransactions = transactions.map(t =>
+      t.id === transactionId ? { ...t, flagged: false } : t
+    );
+    
+    // Update the transactions in the DatasetContext
+    // setTransactions(updatedTransactions); // Ensure setTransactions is available from DatasetContext
+    
+    toast({
+      title: "Alert Dismissed",
+      description: `Alert for transaction ${transactionId} has been dismissed.`,
+    });
+  };
+  
+  const handleViewDetails = (transactionId: string) => {
+    navigate(`/transactions?id=${transactionId}`);
   };
   
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <div className="flex justify-between items-start mb-2">
-          <h1 className="text-2xl font-semibold text-slate-900">Fraud Alerts</h1>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleViewFlagged}
-          >
-            <Flag className="h-4 w-4 mr-2" />
-            View Flagged Transactions
-          </Button>
-        </div>
-        <p className="text-slate-500 mb-6">Review and manage potentially fraudulent transactions</p>
+        <h1 className="text-2xl font-semibold text-slate-900 mb-2">Fraud Alerts</h1>
+        <p className="text-slate-500 mb-6">Review potential fraudulent transactions and take appropriate action</p>
         
         {alertTransactions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -74,13 +65,13 @@ const Alerts = () => {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
                       <h3 className="font-medium">{transaction.merchant}</h3>
                     </div>
                     <p className="text-sm text-slate-500 mt-1">{transaction.description}</p>
                   </div>
-                  <Badge variant={transaction.riskScore >= 90 ? "destructive" : "outline"} className="ml-2">
-                    {transaction.riskScore}% Risk
+                  <Badge variant="outline" className="ml-2">
+                    Potential Fraud
                   </Badge>
                 </div>
                 
@@ -108,26 +99,25 @@ const Alerts = () => {
                     <span>Risk Level</span>
                     <span className="font-medium">{transaction.riskScore}%</span>
                   </div>
-                  <Progress value={transaction.riskScore} className="h-1.5" indicatorClassName={getRiskColor(transaction.riskScore)} />
+                  {/* You might want to add a progress bar here as well */}
                 </div>
                 
                 <div className="flex justify-end gap-2">
                   <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleApprove(transaction.id)}
-                    className="text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => handleFlagAsFraud(transaction.id)}
+                    onClick={() => handleFlagTransaction(transaction.id)}
                   >
                     <Flag className="h-4 w-4 mr-1" />
-                    Flag as Fraud
+                    Flag Transaction
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => handleDismissAlert(transaction.id)}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Dismiss Alert
                   </Button>
                 </div>
               </Card>
@@ -138,17 +128,8 @@ const Alerts = () => {
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-1">No alerts found</h3>
-            <p className="text-slate-500">All transactions appear to be legitimate</p>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="mt-4"
-              onClick={handleViewFlagged}
-            >
-              <ArrowRight className="h-4 w-4 mr-1" />
-              View Flagged Transactions
-            </Button>
+            <h3 className="text-lg font-medium text-slate-900 mb-1">No new alerts</h3>
+            <p className="text-slate-500">All potential fraudulent transactions have been reviewed</p>
           </div>
         )}
       </div>

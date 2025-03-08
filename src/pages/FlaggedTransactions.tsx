@@ -1,7 +1,6 @@
 
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { generateDemoTransactions } from '@/utils/demoData';
 import { AlertTriangle, CheckCircle, Flag, ShieldAlert } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
 import { Progress } from "@/components/ui/progress";
@@ -10,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { useDataset } from '@/contexts/DatasetContext';
 
 const FlaggedTransactions = () => {
-  const transactions = generateDemoTransactions(100);
+  const { transactions } = useDataset();
   const flaggedTransactions = transactions
     .filter(t => t.status === 'flagged')
     .sort((a, b) => b.riskScore - a.riskScore);

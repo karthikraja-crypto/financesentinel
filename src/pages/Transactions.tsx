@@ -1,18 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import TransactionTable from '@/components/dashboard/TransactionTable';
 import DatasetUploader from '@/components/dashboard/DatasetUploader';
 import CurrencySelector from '@/components/dashboard/CurrencySelector';
-import { generateDemoTransactions } from '@/utils/demoData';
-import { Transaction } from '@/utils/demoData';
+import { useDataset } from '@/contexts/DatasetContext';
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(generateDemoTransactions(50));
-  
-  const handleDatasetUploaded = (newTransactions: Transaction[]) => {
-    setTransactions(newTransactions);
-  };
+  const { transactions } = useDataset();
   
   return (
     <DashboardLayout>
@@ -26,7 +21,7 @@ const Transactions = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           <div className="lg:col-span-1">
-            <DatasetUploader onDatasetUploaded={handleDatasetUploaded} />
+            <DatasetUploader />
           </div>
           <div className="lg:col-span-3">
             <TransactionTable transactions={transactions} />

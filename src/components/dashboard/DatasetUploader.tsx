@@ -6,21 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Upload, FileText, AlertCircle, FileSpreadsheet, FileImage, Database } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from '@/contexts/UserContext';
+import { useDataset } from '@/contexts/DatasetContext';
 import SignInForm from '@/components/auth/SignInForm';
 import * as XLSX from 'xlsx';
 
-interface DatasetUploaderProps {
-  onDatasetUploaded: (data: any[]) => void;
-}
-
-const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) => {
+const DatasetUploader: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
-  const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, login } = useUser();
+  const { setTransactions, lastUploadedFile, setLastUploadedFile } = useDataset();
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -37,7 +34,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
       return;
     }
     
-    setFileName(file.name);
+    setLastUploadedFile(file.name);
     setError(null);
 
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
@@ -52,7 +49,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
             const jsonData = JSON.parse(event.target.result as string);
             
             if (Array.isArray(jsonData)) {
-              onDatasetUploaded(jsonData);
+              setTransactions(jsonData);
               toast({
                 title: "Dataset loaded successfully",
                 description: `${jsonData.length} records imported from JSON`,
@@ -98,7 +95,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             if (Array.isArray(jsonData) && jsonData.length > 0) {
-              onDatasetUploaded(jsonData);
+              setTransactions(jsonData);
               toast({
                 title: "Dataset loaded successfully",
                 description: `${jsonData.length} records imported from Excel`,
@@ -141,7 +138,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             if (Array.isArray(jsonData) && jsonData.length > 0) {
-              onDatasetUploaded(jsonData);
+              setTransactions(jsonData);
               toast({
                 title: "Dataset loaded successfully",
                 description: `${jsonData.length} records imported from CSV`,
@@ -194,7 +191,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
   };
 
   const getFileIcon = () => {
-    if (!fileName) return <Upload className="h-6 w-6 text-slate-500" />;
+    if (!lastUploadedFile) return <Upload className="h-6 w-6 text-slate-500" />;
     
     if (fileType === 'json') {
       return <FileText className="h-4 w-4 text-finance-blue" />;
@@ -238,7 +235,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
               {getFileIcon()}
             </div>
             
-            {fileName ? (
+            {lastUploadedFile ? (
               <div className="flex items-center space-x-2">
                 {fileType === 'json' ? (
                   <FileText className="h-4 w-4 text-finance-blue" />
@@ -249,7 +246,7 @@ const DatasetUploader: React.FC<DatasetUploaderProps> = ({ onDatasetUploaded }) 
                 ) : (
                   <FileText className="h-4 w-4 text-finance-blue" />
                 )}
-                <span className="text-sm font-medium text-slate-700">{fileName}</span>
+                <span className="text-sm font-medium text-slate-700">{lastUploadedFile}</span>
               </div>
             ) : (
               <>
