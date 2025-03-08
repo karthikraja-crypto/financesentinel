@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ const DatasetUploader: React.FC = () => {
     setIsDragging(false);
   };
 
-  // Helper function to validate if an object is a valid Transaction
   const isValidTransaction = (obj: any): obj is Transaction => {
     return (
       typeof obj === 'object' &&
@@ -47,13 +45,10 @@ const DatasetUploader: React.FC = () => {
     );
   };
 
-  // Helper function to validate and convert an array of unknown objects to Transaction[]
   const validateTransactions = (data: any[]): Transaction[] => {
-    // Basic validation to ensure all required fields are present
     const validTransactions: Transaction[] = [];
     
     for (const item of data) {
-      // For missing or invalid data, attempt to fix it
       const transaction: any = {
         id: item.id || `TX-${Math.random().toString(36).substr(2, 9)}`,
         date: item.date || new Date().toISOString().split('T')[0],
@@ -71,7 +66,6 @@ const DatasetUploader: React.FC = () => {
         flagged: typeof item.flagged === 'boolean' ? item.flagged : false
       };
       
-      // Ensure the transaction now meets our criteria
       if (isValidTransaction(transaction)) {
         validTransactions.push(transaction);
       }
@@ -212,11 +206,22 @@ const DatasetUploader: React.FC = () => {
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             if (Array.isArray(jsonData) && jsonData.length > 0) {
-              setTransactions(jsonData);
-              toast({
-                title: "Dataset loaded successfully",
-                description: `${jsonData.length} records imported from CSV`,
-              });
+              const validTransactions = validateTransactions(jsonData);
+              
+              if (validTransactions.length > 0) {
+                setTransactions(validTransactions);
+                toast({
+                  title: "Dataset loaded successfully",
+                  description: `${validTransactions.length} records imported from CSV`,
+                });
+              } else {
+                setError("CSV file contains no valid transactions");
+                toast({
+                  variant: "destructive",
+                  title: "Invalid dataset format",
+                  description: "No valid transactions found in the CSV file",
+                });
+              }
             } else {
               setError("CSV file appears to be empty");
               toast({
@@ -416,7 +421,6 @@ const DatasetUploader: React.FC = () => {
         </div>
       </Card>
       
-      {/* Sign In Modal */}
       {showSignIn && (
         <SignInForm 
           onSignIn={handleUserSignedIn}
