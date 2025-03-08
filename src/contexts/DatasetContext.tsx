@@ -1,35 +1,16 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Transaction, generateDemoTransactions } from '@/utils/demoData';
-import { generateLargeDataset } from '@/utils/largeDatasetGenerator';
-import { generateCustomDataset } from '@/utils/customDatasetGenerator';
 
 interface DatasetContextType {
   transactions: Transaction[];
   setTransactions: (transactions: Transaction[]) => void;
   resetToDefault: () => void;
-  loadLargeDataset: () => void;
-  loadCustomDataset: (options: CustomDatasetOptions) => void;
   lastUploadedFile: string | null;
   setLastUploadedFile: (fileName: string | null) => void;
   filterTransactionsByDate: (period: 'week' | 'month' | 'year' | 'all') => Transaction[];
   flagTransaction: (transactionId: string) => void;
   dismissAlert: (transactionId: string) => void;
-}
-
-export interface CustomDatasetOptions {
-  count?: number;
-  riskLevels?: {
-    low?: number;
-    medium?: number;
-    high?: number;
-    critical?: number;
-  };
-  timeRange?: {
-    startDate?: Date;
-    endDate?: Date;
-  };
-  includeFlags?: boolean;
 }
 
 const DatasetContext = createContext<DatasetContextType | undefined>(undefined);
@@ -41,16 +22,6 @@ export const DatasetProvider = ({ children }: { children: ReactNode }) => {
   const resetToDefault = () => {
     setTransactions(generateDemoTransactions(100));
     setLastUploadedFile(null);
-  };
-
-  const loadLargeDataset = () => {
-    setTransactions(generateLargeDataset(250));
-    setLastUploadedFile("large-dataset.json");
-  };
-
-  const loadCustomDataset = (options: CustomDatasetOptions) => {
-    setTransactions(generateCustomDataset(options));
-    setLastUploadedFile("custom-dataset.json");
   };
 
   const filterTransactionsByDate = (period: 'week' | 'month' | 'year' | 'all'): Transaction[] => {
@@ -102,8 +73,6 @@ export const DatasetProvider = ({ children }: { children: ReactNode }) => {
       transactions,
       setTransactions,
       resetToDefault,
-      loadLargeDataset,
-      loadCustomDataset,
       lastUploadedFile,
       setLastUploadedFile,
       filterTransactionsByDate,
