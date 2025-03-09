@@ -49,6 +49,9 @@ const FlaggedTransactions = () => {
     const transaction = transactions.find(t => t.id === transactionId);
     
     try {
+      console.log("Preparing to send fraud report email...");
+      console.log("User email:", user.email);
+      
       // Include user email in the report details
       const reportDetails = {
         ...transaction,
@@ -56,15 +59,18 @@ const FlaggedTransactions = () => {
         reportedAt: new Date().toISOString(),
       };
       
+      console.log("Report details:", reportDetails);
+      
       // Send the fraud report email to the user's email
       await sendFraudReportEmail(transactionId, reportDetails);
       
       toast({
         title: "Fraud Report Submitted",
-        description: `A confirmation has been sent to ${user.email}`,
+        description: `A confirmation has been sent to ${user.email}. Check browser console for details.`,
         variant: "default",
       });
     } catch (error) {
+      console.error("Error sending fraud report:", error);
       toast({
         title: "Error Reporting Fraud",
         description: "There was an error submitting the fraud report. Please try again.",

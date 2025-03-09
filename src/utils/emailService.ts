@@ -5,13 +5,13 @@
 export const sendFraudReportEmail = (transactionId: string, details: any): Promise<boolean> => {
   const recipientEmail = details.reportedBy || 'user@example.com';
   
-  console.log(`📧 Email sent to ${recipientEmail}: Fraud Report for Transaction ${transactionId}`, details);
+  console.log(`📧 SENDING EMAIL to ${recipientEmail}: Fraud Report for Transaction ${transactionId}`, details);
   
   // In a real application, this would be an API call
   return new Promise((resolve) => {
     setTimeout(() => {
       // Log the email that would be sent
-      console.log(`
+      const emailContent = `
 Email Subject: Fraud Report Confirmation - Transaction ${transactionId.substring(0, 8)}
 To: ${recipientEmail}
 From: security@finsafe.com
@@ -34,7 +34,13 @@ Thank you for your vigilance in protecting your financial security.
 
 Sincerely,
 The FinSafe Security Team
-      `);
+      `;
+      
+      console.log(`📧 EMAIL SENT SUCCESSFULLY:`);
+      console.log(emailContent);
+      
+      // Alert the user that in a real application, an email would be sent
+      alert(`In a real application, an email would be sent to ${recipientEmail}.\n\nSince this is a demo, check your browser console to see the email content.`);
       
       resolve(true);
     }, 1000);
