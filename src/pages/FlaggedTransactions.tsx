@@ -11,10 +11,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { useDataset } from '@/contexts/DatasetContext';
 import { sendFraudReportEmail } from '@/utils/emailService';
+import { useUser } from '@/contexts/UserContext';
+import TransactionDetails from '@/components/dashboard/TransactionDetails';
 
 const FlaggedTransactions = () => {
   const { transactions } = useDataset();
+  const { user } = useUser();
   const [isReporting, setIsReporting] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const flaggedTransactions = transactions
     .filter(t => t.status === 'flagged')
     .sort((a, b) => b.riskScore - a.riskScore);
@@ -30,18 +34,34 @@ const FlaggedTransactions = () => {
   };
   
   const handleReportFraud = async (transactionId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to report fraud.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsReporting(transactionId);
     
     // Find the transaction details
     const transaction = transactions.find(t => t.id === transactionId);
     
     try {
-      // Send the fraud report email
-      await sendFraudReportEmail(transactionId, transaction);
+      // Include user email in the report details
+      const reportDetails = {
+        ...transaction,
+        reportedBy: user.email,
+        reportedAt: new Date().toISOString(),
+      };
+      
+      // Send the fraud report email to the user's email
+      await sendFraudReportEmail(transactionId, reportDetails);
       
       toast({
         title: "Fraud Report Submitted",
-        description: "Transaction has been reported and an email notification has been sent.",
+        description: `A confirmation has been sent to ${user.email}`,
         variant: "default",
       });
     } catch (error) {
@@ -53,6 +73,10 @@ const FlaggedTransactions = () => {
     } finally {
       setIsReporting(null);
     }
+  };
+  
+  const handleViewTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
   };
   
   const handleBackToAlerts = () => {
@@ -109,7 +133,15 @@ const FlaggedTransactions = () => {
                   <Progress value={transaction.riskScore} className="h-1.5" indicatorClassName={getRiskColor(transaction.riskScore)} />
                 </div>
                 
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-between gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleViewTransaction(transaction)}
+                  >
+                    View Details
+                  </Button>
+                  
                   <Button 
                     variant="destructive" 
                     size="sm"
@@ -142,6 +174,13 @@ const FlaggedTransactions = () => {
           </div>
         )}
       </div>
+      
+      {selectedTransaction && (
+        <TransactionDetails
+          transaction={selectedTransaction}
+          onClose={() => setSelectedTransaction(null)}
+        />
+      )}
     </DashboardLayout>
   );
 };

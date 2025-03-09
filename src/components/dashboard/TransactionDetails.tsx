@@ -2,11 +2,15 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Calendar, CreditCard, Tag, Map, ArrowRight, AlertTriangle } from 'lucide-react';
+import { X, Calendar, CreditCard, Tag, Map, ArrowRight, AlertTriangle, Flag } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
 import { Transaction } from '@/utils/demoData';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useUser } from '@/contexts/UserContext';
+import { sendFraudReportEmail } from '@/utils/emailService';
+import { useToast } from "@/hooks/use-toast";
+import { useDataset } from '@/contexts/DatasetContext';
 
 interface TransactionDetailsProps {
   transaction: Transaction;
@@ -14,6 +18,11 @@ interface TransactionDetailsProps {
 }
 
 const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, onClose }) => {
+  const { user } = useUser();
+  const { toast } = useToast();
+  const { flagTransaction } = useDataset();
+  const [isReporting, setIsReporting] = React.useState(false);
+  
   const getRiskColor = (score: number): string => {
     if (score >= 90) return 'bg-red-600';
     if (score >= 80) return 'bg-red-500';
@@ -27,6 +36,49 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'flagged': return 'bg-red-100 text-red-800';
       default: return 'bg-slate-100 text-slate-800';
+    }
+  };
+  
+  const handleReportFraud = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to report fraud.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsReporting(true);
+    try {
+      // Include user email in the report details
+      const reportDetails = {
+        ...transaction,
+        reportedBy: user.email,
+        reportedAt: new Date().toISOString(),
+      };
+      
+      // Send email to the user's email address
+      await sendFraudReportEmail(transaction.id, reportDetails);
+      
+      // Flag the transaction if it's not already flagged
+      if (transaction.status !== 'flagged') {
+        flagTransaction(transaction.id);
+      }
+      
+      toast({
+        title: "Fraud Report Submitted",
+        description: `A confirmation has been sent to ${user.email}`,
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Reporting Fraud",
+        description: "There was an error submitting the fraud report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReporting(false);
     }
   };
   
@@ -173,7 +225,19 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
           </div>
         </div>
         
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-between mt-6">
+          {transaction.status === 'flagged' || transaction.riskScore > 70 ? (
+            <Button 
+              variant="destructive" 
+              disabled={isReporting}
+              onClick={handleReportFraud}
+            >
+              <Flag className="h-4 w-4 mr-1" />
+              {isReporting ? 'Sending Report...' : 'Report Fraud'}
+            </Button>
+          ) : (
+            <div></div>
+          )}
           <Button onClick={onClose}>
             Close
           </Button>
