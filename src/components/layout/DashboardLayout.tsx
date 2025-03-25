@@ -1,23 +1,18 @@
+
 import React, { useState } from 'react';
-import {
-  Box,
-  Flex,
-  Avatar,
-  HStack,
-  IconButton,
-  Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  useDisclosure,
-  useColorModeValue,
-  Stack,
-} from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon, AddIcon } from '@chakra-ui/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, X } from "lucide-react";
 
 interface NavLinkProps {
   children: React.ReactNode;
@@ -26,13 +21,7 @@ interface NavLinkProps {
 
 const NavLink: React.FC<NavLinkProps> = ({ children, to }) => (
   <Link
-    px={2}
-    py={1}
-    rounded={'md'}
-    _hover={{
-      textDecoration: 'none',
-      bg: useColorModeValue('gray.200', 'gray.700'),
-    }}
+    className="px-2 py-1 rounded-md hover:bg-gray-100 hover:no-underline"
     to={to}
   >
     {children}
@@ -54,32 +43,29 @@ interface UserProfileProps {
 
 const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onClose }) => {
   return (
-    <Box
-      p={4}
-      bg={useColorModeValue('white', 'gray.800')}
-      borderRadius="md"
-      boxShadow="md"
-    >
-      <HStack spacing={4}>
-        <Avatar name={user.name} src="" />
-        <Box>
-          <p fontWeight="bold">{user.name}</p>
-          <p fontSize="sm" color="gray.500">{user.email}</p>
-        </Box>
-      </HStack>
-      <MenuDivider my={3} />
-      <Button colorScheme="red" onClick={onLogout} w="100%">
+    <div className="p-4 bg-white rounded-md shadow-md">
+      <div className="flex items-center space-x-4">
+        <Avatar>
+          <AvatarFallback>{user.name?.charAt(0) || 'U'}</AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="font-bold">{user.name}</p>
+          <p className="text-sm text-gray-500">{user.email}</p>
+        </div>
+      </div>
+      <div className="border-t my-3"></div>
+      <Button variant="destructive" onClick={onLogout} className="w-full">
         Logout
       </Button>
-      <Button mt={3} onClick={onClose} w="100%">
+      <Button variant="outline" onClick={onClose} className="w-full mt-3">
         Close
       </Button>
-    </Box>
+    </div>
   );
 };
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useUser();
   const navigate = useNavigate();
   const [showUserProfile, setShowUserProfile] = useState(false);
@@ -100,93 +86,82 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
-      <Box px={4}>
-        <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-          <IconButton
-            size={'md'}
-            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-            aria-label={'Open Menu'}
-            display={{ md: 'none' }}
-            onClick={isOpen ? onClose : onOpen}
-          />
-          <HStack spacing={8} alignItems={'center'}>
-            <Box fontWeight="bold">Finance Sentinel</Box>
-            <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
+    <div className="min-h-screen bg-gray-100">
+      <div className="px-4">
+        <div className="h-16 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <span className="sr-only">Toggle Menu</span>
+          </Button>
+          
+          <div className="flex items-center space-x-8">
+            <div className="font-bold">Finance Sentinel</div>
+            <nav className="hidden md:flex space-x-4">
               {navItems.map((link) => (
                 <NavLink key={link.label} to={link.to}>{link.label}</NavLink>
               ))}
-            </HStack>
-          </HStack>
+            </nav>
+          </div>
           
-          <Flex alignItems={'center'}>
-            <Menu>
-              <MenuButton
-                py={2}
-                transition="all 0.3s"
-                _focus={{ boxShadow: 'none' }}
-                onClick={() => setShowUserProfile(true)}
-              >
-                <HStack>
-                  <Avatar
-                    size={'sm'}
-                    name={user?.name}
-                    src={''}
-                  />
-                  <Box display={{ base: 'none', md: 'flex' }} alignItems={'center'}>
-                    <p fontSize={'sm'} fontWeight={'bold'}>
-                      {user?.name}
-                    </p>
-                  </Box>
-                </HStack>
-              </MenuButton>
-              <MenuList alignItems={'center'} right={0}>
-                <MenuItem>View Profile</MenuItem>
-                <MenuItem>Settings</MenuItem>
-                <MenuDivider />
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
-              </MenuList>
-            </Menu>
-          </Flex>
-        </Flex>
-      </Box>
+          <div className="flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center space-x-2"
+                  onClick={() => setShowUserProfile(true)}
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden md:inline font-medium text-sm">
+                    {user?.name}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>View Profile</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
 
-      {isOpen ? (
-        <Box pb={4} display={{ md: 'none' }}>
-          <Stack as={'nav'} spacing={4}>
+      {isOpen && (
+        <div className="block md:hidden pb-4">
+          <nav className="flex flex-col space-y-4 px-4">
             {navItems.map((link) => (
               <NavLink key={link.label} to={link.to}>{link.label}</NavLink>
             ))}
-          </Stack>
-        </Box>
-      ) : null}
+          </nav>
+        </div>
+      )}
 
-      <Box p={4}>
+      <div className="p-4">
         {children}
-      </Box>
+      </div>
       
       {showUserProfile && user && (
-        <Box
-          position="fixed"
-          top="0"
-          left="0"
-          width="100%"
-          height="100%"
-          bg="rgba(0, 0, 0, 0.5)"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          zIndex="10"
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-10"
         >
           <UserProfile 
             user={user}
             onLogout={handleLogout}
             onClose={() => setShowUserProfile(false)} 
           />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
-}
+};
 
 export default DashboardLayout;
