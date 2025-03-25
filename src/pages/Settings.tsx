@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from '@/contexts/UserContext';
 import SignInForm from '@/components/auth/SignInForm';
 import { useToast } from "@/hooks/use-toast";
+import FraudSettingsTab from '@/components/settings/FraudSettingsTab';
 
 const Settings = () => {
   const { user, isAuthenticated, updateProfile, login } = useUser();
@@ -77,6 +77,7 @@ const Settings = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="fraud">Fraud Detection</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="api">API Access</TabsTrigger>
           </TabsList>
@@ -192,6 +193,10 @@ const Settings = () => {
             </Card>
           </TabsContent>
           
+          <TabsContent value="fraud">
+            <FraudSettingsTab />
+          </TabsContent>
+          
           <TabsContent value="security">
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Security Settings</h2>
@@ -253,7 +258,7 @@ const Settings = () => {
                 <div className="flex justify-between items-center mb-2">
                   <div>
                     <p className="font-medium">API Key</p>
-                    <p className="font-mono text-sm">••••••••••••••••••••••••</p>
+                    <p className="font-mono text-sm">••••��•••••••••••••••••••</p>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => {
                     if (!isAuthenticated) {
