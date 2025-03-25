@@ -1,47 +1,40 @@
-
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import {
+  Box,
+  Flex,
+  Avatar,
+  HStack,
+  IconButton,
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+  useDisclosure,
+  useColorModeValue,
+  Stack,
+} from '@chakra-ui/react';
+import { HamburgerIcon, CloseIcon, AddIcon } from '@chakra-ui/icons';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import UserProfile from '@/components/auth/UserProfile';
-import { 
-  BarChart4, 
-  Bell, 
-  CreditCard, 
-  Flag, 
-  Home, 
-  LogOut, 
-  Menu, 
-  Settings, 
-  X,
-  Sliders
-} from 'lucide-react';
 
-const SidebarLink = ({ 
-  to, 
-  children, 
-  icon: Icon,
-  active = false,
-  onClick
-}: { 
-  to: string; 
-  children: React.ReactNode; 
-  icon: React.ElementType;
-  active?: boolean;
-  onClick?: () => void;
-}) => (
-  <Link 
-    to={to} 
-    className={`flex items-center px-4 py-3 text-sm rounded-md transition-colors ${
-      active 
-        ? 'bg-slate-100 text-slate-900 font-medium' 
-        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-    }`}
-    onClick={onClick}
+interface NavLinkProps {
+  children: React.ReactNode;
+  to: string;
+}
+
+const NavLink: React.FC<NavLinkProps> = ({ children, to }) => (
+  <Link
+    px={2}
+    py={1}
+    rounded={'md'}
+    _hover={{
+      textDecoration: 'none',
+      bg: useColorModeValue('gray.200', 'gray.700'),
+    }}
+    to={to}
   >
-    <Icon className="w-5 h-5 mr-3 text-slate-500" />
     {children}
   </Link>
 );
@@ -50,240 +43,150 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const { pathname } = useLocation();
-  const { user, isAuthenticated, logout } = useUser();
-  
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+interface UserProfileProps {
+  user: {
+    name: string;
+    email: string;
   };
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-  
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-  
+  onLogout: () => void;
+  onClose: () => void;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onClose }) => {
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      {/* Sidebar for desktop */}
-      <aside className="hidden md:flex md:flex-col md:w-64 border-r bg-white">
-        <div className="flex items-center h-16 px-6 border-b">
-          <Link to="/" className="flex items-center">
-            <div className="bg-indigo-600 text-white p-1.5 rounded mr-2">
-              <BarChart4 className="w-5 h-5" />
-            </div>
-            <span className="text-lg font-semibold text-slate-900">Finance Sentinel</span>
-          </Link>
-        </div>
-        
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          <SidebarLink to="/" icon={Home} active={pathname === '/'}>
-            Dashboard
-          </SidebarLink>
-          <SidebarLink to="/transactions" icon={CreditCard} active={pathname === '/transactions'}>
-            Transactions
-          </SidebarLink>
-          <SidebarLink to="/analytics" icon={BarChart4} active={pathname === '/analytics'}>
-            Analytics
-          </SidebarLink>
-          <SidebarLink to="/flexible-parameters" icon={Sliders} active={pathname === '/flexible-parameters'}>
-            Flexible Parameters
-          </SidebarLink>
-          <SidebarLink to="/alerts" icon={Bell} active={pathname === '/alerts'}>
-            Fraud Alerts
-          </SidebarLink>
-          <SidebarLink to="/flagged-transactions" icon={Flag} active={pathname === '/flagged-transactions'}>
-            Flagged Transactions
-          </SidebarLink>
-          <SidebarLink to="/settings" icon={Settings} active={pathname === '/settings'}>
-            Settings
-          </SidebarLink>
-        </nav>
-        
-        <div className="p-4 border-t">
-          {isAuthenticated ? (
-            <div>
-              <button 
-                onClick={() => setShowProfile(true)}
-                className="flex items-center w-full p-2 rounded-md hover:bg-slate-50 transition-colors"
-              >
-                <Avatar className="w-8 h-8 mr-2">
-                  <AvatarFallback className="bg-indigo-100 text-indigo-600">
-                    {user?.name ? getInitials(user.name) : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-slate-900 truncate">
-                    {user?.name || 'User'}
-                  </p>
-                  <p className="text-xs text-slate-500 truncate">
-                    {user?.email || 'user@example.com'}
-                  </p>
-                </div>
-              </button>
-              <Separator className="my-2" />
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                onClick={() => logout()}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              className="w-full" 
-              onClick={() => setShowProfile(true)}
-            >
-              Sign In
-            </Button>
-          )}
-        </div>
-      </aside>
-      
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-0 bg-slate-900/50 z-40 transition-opacity ${
-        sidebarOpen 
-          ? 'opacity-100' 
-          : 'opacity-0 pointer-events-none'
-      }`} onClick={closeSidebar}></div>
-      
-      <aside className={`fixed top-0 left-0 bottom-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out ${
-        sidebarOpen 
-          ? 'translate-x-0' 
-          : '-translate-x-full'
-      }`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b">
-          <Link to="/" className="flex items-center" onClick={closeSidebar}>
-            <div className="bg-indigo-600 text-white p-1.5 rounded mr-2">
-              <BarChart4 className="w-5 h-5" />
-            </div>
-            <span className="text-lg font-semibold text-slate-900">Finance Sentinel</span>
-          </Link>
-          <button onClick={closeSidebar}>
-            <X className="w-5 h-5 text-slate-500" />
-          </button>
-        </div>
-        
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          <SidebarLink to="/" icon={Home} active={pathname === '/'} onClick={closeSidebar}>
-            Dashboard
-          </SidebarLink>
-          <SidebarLink to="/transactions" icon={CreditCard} active={pathname === '/transactions'} onClick={closeSidebar}>
-            Transactions
-          </SidebarLink>
-          <SidebarLink to="/analytics" icon={BarChart4} active={pathname === '/analytics'} onClick={closeSidebar}>
-            Analytics
-          </SidebarLink>
-          <SidebarLink to="/flexible-parameters" icon={Sliders} active={pathname === '/flexible-parameters'} onClick={closeSidebar}>
-            Flexible Parameters
-          </SidebarLink>
-          <SidebarLink to="/alerts" icon={Bell} active={pathname === '/alerts'} onClick={closeSidebar}>
-            Fraud Alerts
-          </SidebarLink>
-          <SidebarLink to="/flagged-transactions" icon={Flag} active={pathname === '/flagged-transactions'} onClick={closeSidebar}>
-            Flagged Transactions
-          </SidebarLink>
-          <SidebarLink to="/settings" icon={Settings} active={pathname === '/settings'} onClick={closeSidebar}>
-            Settings
-          </SidebarLink>
-        </nav>
-        
-        <div className="p-4 border-t">
-          {isAuthenticated ? (
-            <div>
-              <button 
-                onClick={() => {
-                  setShowProfile(true);
-                  closeSidebar();
-                }}
-                className="flex items-center w-full p-2 rounded-md hover:bg-slate-50 transition-colors"
-              >
-                <Avatar className="w-8 h-8 mr-2">
-                  <AvatarFallback className="bg-indigo-100 text-indigo-600">
-                    {user?.name ? getInitials(user.name) : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-slate-900 truncate">
-                    {user?.name || 'User'}
-                  </p>
-                  <p className="text-xs text-slate-500 truncate">
-                    {user?.email || 'user@example.com'}
-                  </p>
-                </div>
-              </button>
-              <Separator className="my-2" />
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                onClick={() => {
-                  logout();
-                  closeSidebar();
-                }}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              className="w-full" 
-              onClick={() => {
-                setShowProfile(true);
-                closeSidebar();
-              }}
-            >
-              Sign In
-            </Button>
-          )}
-        </div>
-      </aside>
-      
-      {/* Main content */}
-      <main className="flex-1">
-        <header className="flex items-center h-16 px-6 border-b bg-white">
-          <button className="md:hidden mr-4" onClick={toggleSidebar}>
-            <Menu className="w-6 h-6 text-slate-500" />
-          </button>
-          <div className="flex-1"></div>
-          <div className="md:hidden">
-            <button 
-              onClick={() => setShowProfile(true)}
-              className="flex items-center"
-            >
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-indigo-100 text-indigo-600">
-                  {isAuthenticated && user?.name ? getInitials(user.name) : 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </button>
-          </div>
-        </header>
-        
-        <div className="p-6">
-          {children}
-        </div>
-      </main>
-      
-      {showProfile && (
-        <UserProfile onClose={() => setShowProfile(false)} />
-      )}
-    </div>
+    <Box
+      p={4}
+      bg={useColorModeValue('white', 'gray.800')}
+      borderRadius="md"
+      boxShadow="md"
+    >
+      <HStack spacing={4}>
+        <Avatar name={user.name} src="" />
+        <Box>
+          <p fontWeight="bold">{user.name}</p>
+          <p fontSize="sm" color="gray.500">{user.email}</p>
+        </Box>
+      </HStack>
+      <MenuDivider my={3} />
+      <Button colorScheme="red" onClick={onLogout} w="100%">
+        Logout
+      </Button>
+      <Button mt={3} onClick={onClose} w="100%">
+        Close
+      </Button>
+    </Box>
   );
 };
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user, logout } = useUser();
+  const navigate = useNavigate();
+  const [showUserProfile, setShowUserProfile] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const navItems = [
+    { label: 'Dashboard', to: '/' },
+    { label: 'Transactions', to: '/transactions' },
+    { label: 'Analytics', to: '/analytics' },
+    { label: 'Flexible Parameters', to: '/flexible-parameters' },
+    { label: 'Alerts', to: '/alerts' },
+    { label: 'Flagged Transactions', to: '/flagged-transactions' },
+    { label: 'Settings', to: '/settings' },
+  ];
+
+  return (
+    <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
+      <Box px={4}>
+        <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
+          <IconButton
+            size={'md'}
+            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
+            aria-label={'Open Menu'}
+            display={{ md: 'none' }}
+            onClick={isOpen ? onClose : onOpen}
+          />
+          <HStack spacing={8} alignItems={'center'}>
+            <Box fontWeight="bold">Finance Sentinel</Box>
+            <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
+              {navItems.map((link) => (
+                <NavLink key={link.label} to={link.to}>{link.label}</NavLink>
+              ))}
+            </HStack>
+          </HStack>
+          
+          <Flex alignItems={'center'}>
+            <Menu>
+              <MenuButton
+                py={2}
+                transition="all 0.3s"
+                _focus={{ boxShadow: 'none' }}
+                onClick={() => setShowUserProfile(true)}
+              >
+                <HStack>
+                  <Avatar
+                    size={'sm'}
+                    name={user?.name}
+                    src={''}
+                  />
+                  <Box display={{ base: 'none', md: 'flex' }} alignItems={'center'}>
+                    <p fontSize={'sm'} fontWeight={'bold'}>
+                      {user?.name}
+                    </p>
+                  </Box>
+                </HStack>
+              </MenuButton>
+              <MenuList alignItems={'center'} right={0}>
+                <MenuItem>View Profile</MenuItem>
+                <MenuItem>Settings</MenuItem>
+                <MenuDivider />
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
+        </Flex>
+      </Box>
+
+      {isOpen ? (
+        <Box pb={4} display={{ md: 'none' }}>
+          <Stack as={'nav'} spacing={4}>
+            {navItems.map((link) => (
+              <NavLink key={link.label} to={link.to}>{link.label}</NavLink>
+            ))}
+          </Stack>
+        </Box>
+      ) : null}
+
+      <Box p={4}>
+        {children}
+      </Box>
+      
+      {showUserProfile && user && (
+        <Box
+          position="fixed"
+          top="0"
+          left="0"
+          width="100%"
+          height="100%"
+          bg="rgba(0, 0, 0, 0.5)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex="10"
+        >
+          <UserProfile 
+            user={user}
+            onLogout={handleLogout}
+            onClose={() => setShowUserProfile(false)} 
+          />
+        </Box>
+      )}
+    </Box>
+  );
+}
 
 export default DashboardLayout;
