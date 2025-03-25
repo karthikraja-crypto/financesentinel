@@ -15,7 +15,7 @@ export interface FraudRule {
 export const defaultRules: FraudRule[] = [
   {
     id: '1',
-    name: 'Large Transaction',
+    name: 'High-Value Transaction',
     type: 'amount',
     threshold: 90,
     condition: 'greater',
@@ -42,7 +42,7 @@ export const defaultRules: FraudRule[] = [
   },
   {
     id: '4',
-    name: 'Rapid Frequency',
+    name: 'Rapid Transaction Frequency',
     type: 'frequency',
     threshold: 75,
     condition: 'greater',
@@ -79,17 +79,17 @@ export const getAIRecommendations = (rules: FraudRule[]): {
       ]
     },
     {
-      message: "Your merchant category rules could be expanded",
+      message: "Your merchant category parameters could be expanded for better coverage",
       suggestedChanges: [
         { id: '3', value: 'Gambling,Adult,Crypto', threshold: 75 }
       ]
     },
     {
-      message: "Add more location-based rules for better coverage",
+      message: "Add more location-based parameters for comprehensive risk detection",
       suggestedChanges: []
     },
     {
-      message: "Increase threshold sensitivity for frequency-based fraud detection",
+      message: "Increase threshold sensitivity for frequency-based transaction monitoring",
       suggestedChanges: [
         { id: '4', value: 3, threshold: 80 }
       ]

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,7 @@ import Transactions from "./pages/Transactions";
 import Analytics from "./pages/Analytics";
 import Alerts from "./pages/Alerts";
 import FlaggedTransactions from "./pages/FlaggedTransactions";
+import FlexibleParameters from "./pages/FlexibleParameters";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +31,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/flexible-parameters" element={<FlexibleParameters />} />
                 <Route path="/alerts" element={<Alerts />} />
                 <Route path="/flagged-transactions" element={<FlaggedTransactions />} />
                 <Route path="/settings" element={<Settings />} />

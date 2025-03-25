@@ -1,182 +1,286 @@
 
-import React, { ReactNode, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  BarChart3, 
-  CreditCard,
-  AlertTriangle,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  ChevronDown,
-  Flag
-} from "lucide-react";
-import { cn } from '@/lib/utils';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import UserProfile from '@/components/auth/UserProfile';
+import { 
+  BarChart4, 
+  Bell, 
+  CreditCard, 
+  Flag, 
+  Home, 
+  LogOut, 
+  Menu, 
+  Settings, 
+  X,
+  Sliders
+} from 'lucide-react';
+
+const SidebarLink = ({ 
+  to, 
+  children, 
+  icon: Icon,
+  active = false,
+  onClick
+}: { 
+  to: string; 
+  children: React.ReactNode; 
+  icon: React.ElementType;
+  active?: boolean;
+  onClick?: () => void;
+}) => (
+  <Link 
+    to={to} 
+    className={`flex items-center px-4 py-3 text-sm rounded-md transition-colors ${
+      active 
+        ? 'bg-slate-100 text-slate-900 font-medium' 
+        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+    }`}
+    onClick={onClick}
+  >
+    <Icon className="w-5 h-5 mr-3 text-slate-500" />
+    {children}
+  </Link>
+);
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showUserProfile, setShowUserProfile] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [showProfile, setShowProfile] = useState(false);
+  const { pathname } = useLocation();
   const { user, isAuthenticated, logout } = useUser();
   
-  // Toggle sidebar on mobile
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
   
-  // Navigation items with proper routes
-  const navItems = [
-    { name: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, href: '/' },
-    { name: 'Transactions', icon: <CreditCard className="h-5 w-5" />, href: '/transactions' },
-    { name: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, href: '/analytics' },
-    { name: 'Fraud Alerts', icon: <AlertTriangle className="h-5 w-5" />, href: '/alerts' },
-    { name: 'Flagged Transactions', icon: <Flag className="h-5 w-5" />, href: '/flagged-transactions' },
-    { name: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/settings' },
-  ];
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
   
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const closeSidebar = () => {
     setSidebarOpen(false);
   };
   
-  const toggleUserProfile = () => {
-    setShowUserProfile(!showUserProfile);
-  };
-  
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-30 w-full backdrop-blur-lg bg-white/75 border-b border-slate-200 shadow-sm">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Mobile menu button */}
-            <div className="flex items-center lg:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="text-slate-700 focus-ring"
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar for desktop */}
+      <aside className="hidden md:flex md:flex-col md:w-64 border-r bg-white">
+        <div className="flex items-center h-16 px-6 border-b">
+          <Link to="/" className="flex items-center">
+            <div className="bg-indigo-600 text-white p-1.5 rounded mr-2">
+              <BarChart4 className="w-5 h-5" />
+            </div>
+            <span className="text-lg font-semibold text-slate-900">Finance Sentinel</span>
+          </Link>
+        </div>
+        
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          <SidebarLink to="/" icon={Home} active={pathname === '/'}>
+            Dashboard
+          </SidebarLink>
+          <SidebarLink to="/transactions" icon={CreditCard} active={pathname === '/transactions'}>
+            Transactions
+          </SidebarLink>
+          <SidebarLink to="/analytics" icon={BarChart4} active={pathname === '/analytics'}>
+            Analytics
+          </SidebarLink>
+          <SidebarLink to="/flexible-parameters" icon={Sliders} active={pathname === '/flexible-parameters'}>
+            Flexible Parameters
+          </SidebarLink>
+          <SidebarLink to="/alerts" icon={Bell} active={pathname === '/alerts'}>
+            Fraud Alerts
+          </SidebarLink>
+          <SidebarLink to="/flagged-transactions" icon={Flag} active={pathname === '/flagged-transactions'}>
+            Flagged Transactions
+          </SidebarLink>
+          <SidebarLink to="/settings" icon={Settings} active={pathname === '/settings'}>
+            Settings
+          </SidebarLink>
+        </nav>
+        
+        <div className="p-4 border-t">
+          {isAuthenticated ? (
+            <div>
+              <button 
+                onClick={() => setShowProfile(true)}
+                className="flex items-center w-full p-2 rounded-md hover:bg-slate-50 transition-colors"
               >
-                {sidebarOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-                <span className="sr-only">Toggle sidebar</span>
+                <Avatar className="w-8 h-8 mr-2">
+                  <AvatarFallback className="bg-indigo-100 text-indigo-600">
+                    {user?.name ? getInitials(user.name) : 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium text-slate-900 truncate">
+                    {user?.name || 'User'}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {user?.email || 'user@example.com'}
+                  </p>
+                </div>
+              </button>
+              <Separator className="my-2" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={() => logout()}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
               </Button>
             </div>
-            
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center">
-                <div className="bg-finance-blue rounded-md p-1 mr-2">
-                  <BarChart3 className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-semibold text-xl text-slate-900">
-                  Finance Sentinel
-                </span>
-              </Link>
-            </div>
-            
-            {/* Right side nav items */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="relative">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="hidden md:flex items-center gap-1"
-                  onClick={toggleUserProfile}
-                >
-                  <span>{isAuthenticated ? user?.name : "Demo Account"}</span>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </div>
-              <div 
-                className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center cursor-pointer"
-                onClick={toggleUserProfile}
-              >
-                <span className="text-sm font-medium text-slate-700">
-                  {isAuthenticated ? user?.name.charAt(0) : "D"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      {/* Main container */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar for desktop */}
-        <aside className={cn(
-          "fixed inset-y-0 left-0 z-20 w-64 transform transition-transform duration-300 ease-in-out bg-white border-r border-slate-200 pt-16 lg:pt-0 lg:relative lg:translate-x-0 flex flex-col",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}>
-          <div className="flex-1 overflow-y-auto p-4">
-            <nav className="space-y-1 mt-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    location.pathname === item.href
-                      ? "bg-finance-blue text-white"
-                      : "text-slate-700 hover:bg-slate-100"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  {item.icon}
-                  <span className="ml-3">{item.name}</span>
-                </Link>
-              ))}
-            </nav>
-          </div>
-          
-          <div className="p-4 border-t border-slate-200">
+          ) : (
             <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full justify-start text-slate-700"
-              onClick={handleLogout}
+              className="w-full" 
+              onClick={() => setShowProfile(true)}
             >
-              <LogOut className="h-4 w-4 mr-2" />
-              Log out
+              Sign In
             </Button>
-          </div>
-        </aside>
-        
-        {/* Backdrop for mobile sidebar */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 z-10 bg-slate-900/50 lg:hidden"
-            onClick={toggleSidebar}
-          />
-        )}
-        
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mx-auto max-w-7xl">
-            {children}
-          </div>
-        </main>
-      </div>
+          )}
+        </div>
+      </aside>
       
-      {/* User Profile Modal */}
-      {showUserProfile && user && (
-        <UserProfile 
-          user={user} 
-          onClose={toggleUserProfile} 
-          onLogout={handleLogout} 
-        />
+      {/* Mobile sidebar */}
+      <div className={`fixed inset-0 bg-slate-900/50 z-40 transition-opacity ${
+        sidebarOpen 
+          ? 'opacity-100' 
+          : 'opacity-0 pointer-events-none'
+      }`} onClick={closeSidebar}></div>
+      
+      <aside className={`fixed top-0 left-0 bottom-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen 
+          ? 'translate-x-0' 
+          : '-translate-x-full'
+      }`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b">
+          <Link to="/" className="flex items-center" onClick={closeSidebar}>
+            <div className="bg-indigo-600 text-white p-1.5 rounded mr-2">
+              <BarChart4 className="w-5 h-5" />
+            </div>
+            <span className="text-lg font-semibold text-slate-900">Finance Sentinel</span>
+          </Link>
+          <button onClick={closeSidebar}>
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          <SidebarLink to="/" icon={Home} active={pathname === '/'} onClick={closeSidebar}>
+            Dashboard
+          </SidebarLink>
+          <SidebarLink to="/transactions" icon={CreditCard} active={pathname === '/transactions'} onClick={closeSidebar}>
+            Transactions
+          </SidebarLink>
+          <SidebarLink to="/analytics" icon={BarChart4} active={pathname === '/analytics'} onClick={closeSidebar}>
+            Analytics
+          </SidebarLink>
+          <SidebarLink to="/flexible-parameters" icon={Sliders} active={pathname === '/flexible-parameters'} onClick={closeSidebar}>
+            Flexible Parameters
+          </SidebarLink>
+          <SidebarLink to="/alerts" icon={Bell} active={pathname === '/alerts'} onClick={closeSidebar}>
+            Fraud Alerts
+          </SidebarLink>
+          <SidebarLink to="/flagged-transactions" icon={Flag} active={pathname === '/flagged-transactions'} onClick={closeSidebar}>
+            Flagged Transactions
+          </SidebarLink>
+          <SidebarLink to="/settings" icon={Settings} active={pathname === '/settings'} onClick={closeSidebar}>
+            Settings
+          </SidebarLink>
+        </nav>
+        
+        <div className="p-4 border-t">
+          {isAuthenticated ? (
+            <div>
+              <button 
+                onClick={() => {
+                  setShowProfile(true);
+                  closeSidebar();
+                }}
+                className="flex items-center w-full p-2 rounded-md hover:bg-slate-50 transition-colors"
+              >
+                <Avatar className="w-8 h-8 mr-2">
+                  <AvatarFallback className="bg-indigo-100 text-indigo-600">
+                    {user?.name ? getInitials(user.name) : 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium text-slate-900 truncate">
+                    {user?.name || 'User'}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {user?.email || 'user@example.com'}
+                  </p>
+                </div>
+              </button>
+              <Separator className="my-2" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={() => {
+                  logout();
+                  closeSidebar();
+                }}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              className="w-full" 
+              onClick={() => {
+                setShowProfile(true);
+                closeSidebar();
+              }}
+            >
+              Sign In
+            </Button>
+          )}
+        </div>
+      </aside>
+      
+      {/* Main content */}
+      <main className="flex-1">
+        <header className="flex items-center h-16 px-6 border-b bg-white">
+          <button className="md:hidden mr-4" onClick={toggleSidebar}>
+            <Menu className="w-6 h-6 text-slate-500" />
+          </button>
+          <div className="flex-1"></div>
+          <div className="md:hidden">
+            <button 
+              onClick={() => setShowProfile(true)}
+              className="flex items-center"
+            >
+              <Avatar className="w-8 h-8">
+                <AvatarFallback className="bg-indigo-100 text-indigo-600">
+                  {isAuthenticated && user?.name ? getInitials(user.name) : 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </div>
+        </header>
+        
+        <div className="p-6">
+          {children}
+        </div>
+      </main>
+      
+      {showProfile && (
+        <UserProfile onClose={() => setShowProfile(false)} />
       )}
     </div>
   );
