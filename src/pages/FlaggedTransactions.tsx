@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AlertTriangle, CheckCircle, Flag, ShieldAlert } from 'lucide-react';
@@ -50,7 +49,6 @@ const FlaggedTransactions = () => {
     
     try {
       console.log("Preparing to send fraud report email...");
-      console.log("User email:", user.email);
       
       // Include user email in the report details
       const reportDetails = {
@@ -59,14 +57,12 @@ const FlaggedTransactions = () => {
         reportedAt: new Date().toISOString(),
       };
       
-      console.log("Report details:", reportDetails);
-      
-      // Send the fraud report email to the user's email
+      // Send the fraud report email
       await sendFraudReportEmail(transactionId, reportDetails);
       
       toast({
         title: "Fraud Report Submitted",
-        description: `A confirmation has been sent to ${user.email}. Check browser console for details.`,
+        description: `A confirmation email has been sent to ${user.email}`,
         variant: "default",
       });
     } catch (error) {

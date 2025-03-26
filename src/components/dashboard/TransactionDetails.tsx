@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,24 +50,21 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
     
     setIsReporting(true);
     try {
-      // Include user email in the report details
       const reportDetails = {
         ...transaction,
         reportedBy: user.email,
         reportedAt: new Date().toISOString(),
       };
       
-      // Send email to the user's email address
       await sendFraudReportEmail(transaction.id, reportDetails);
       
-      // Flag the transaction if it's not already flagged
       if (transaction.status !== 'flagged') {
         flagTransaction(transaction.id);
       }
       
       toast({
         title: "Fraud Report Submitted",
-        description: `A confirmation has been sent to ${user.email}`,
+        description: `A confirmation email has been sent to ${user.email}`,
         variant: "default",
       });
     } catch (error) {
