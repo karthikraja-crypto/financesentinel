@@ -43,33 +43,33 @@ const FlexibleParameters = () => {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-slate-900 mb-6">Flexible Parameters</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Flexible Parameters</h1>
         
-        <Card className="p-6 mb-6">
+        <Card className="p-6 mb-6 dark:bg-gray-800 dark:text-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold">Parameter Configuration</h2>
-              <p className="text-slate-500 mt-1">Choose how transaction risk parameters are defined</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">Choose how transaction risk parameters are defined</p>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`text-sm ${!useAiParameters ? 'font-medium' : 'text-slate-500'}`}>
+              <span className={`text-sm ${!useAiParameters ? 'font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
                 Custom Parameters
               </span>
               <Switch 
                 checked={useAiParameters}
                 onCheckedChange={handleToggleAiParameters}
               />
-              <span className={`text-sm ${useAiParameters ? 'font-medium' : 'text-slate-500'}`}>
+              <span className={`text-sm ${useAiParameters ? 'font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
                 AI Parameters
               </span>
             </div>
           </div>
           
-          <div className="p-4 bg-slate-50 rounded-md border">
+          <div className="p-4 bg-slate-50 dark:bg-slate-700 rounded-md border dark:border-slate-600">
             <h3 className="font-medium mb-2">
               {useAiParameters ? "AI-Powered Risk Detection" : "Custom Risk Parameters"}
             </h3>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               {useAiParameters 
                 ? "Our AI system is analyzing your transaction patterns and automatically setting optimal risk detection parameters based on your usage."
                 : "You are defining custom parameters for transaction risk detection. The system will use your settings to flag suspicious activities."}
@@ -79,7 +79,7 @@ const FlexibleParameters = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="mt-3"
+                className="mt-3 dark:border-slate-500 dark:text-slate-200 dark:hover:bg-slate-600"
                 onClick={() => {
                   toast({
                     title: "AI Parameters Refreshed",
@@ -93,7 +93,7 @@ const FlexibleParameters = () => {
           </div>
         </Card>
         
-        <FraudSettingsTab />
+        <FraudSettingsTab useCustomParameters={!useAiParameters} />
       </div>
     </DashboardLayout>
   );

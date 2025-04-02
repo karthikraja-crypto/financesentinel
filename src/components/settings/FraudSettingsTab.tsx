@@ -26,7 +26,11 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from '@/contexts/UserContext';
 
-const FraudSettingsTab = () => {
+interface FraudSettingsTabProps {
+  useCustomParameters: boolean;
+}
+
+const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters }) => {
   const [rules, setRules] = useState<FraudRule[]>([]);
   const [recommendation, setRecommendation] = useState<{ 
     message: string; 
@@ -50,10 +54,12 @@ const FraudSettingsTab = () => {
   }, []);
   
   const handleToggleRule = (id: string) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !useCustomParameters) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to modify fraud rules.",
+        title: "Action Not Available",
+        description: useCustomParameters
+          ? "Please sign in to modify fraud rules."
+          : "Enable custom parameters to modify rules.",
         variant: "destructive",
       });
       return;
@@ -72,10 +78,12 @@ const FraudSettingsTab = () => {
   };
   
   const handleUpdateThreshold = (id: string, threshold: number) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !useCustomParameters) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to modify fraud rules.",
+        title: "Action Not Available",
+        description: useCustomParameters
+          ? "Please sign in to modify fraud rules."
+          : "Enable custom parameters to modify rules.",
         variant: "destructive",
       });
       return;
@@ -89,10 +97,12 @@ const FraudSettingsTab = () => {
   };
   
   const handleAddRule = () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !useCustomParameters) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to add fraud rules.",
+        title: "Action Not Available",
+        description: useCustomParameters
+          ? "Please sign in to add fraud rules."
+          : "Enable custom parameters to add rules.",
         variant: "destructive",
       });
       return;
@@ -133,10 +143,12 @@ const FraudSettingsTab = () => {
   };
   
   const handleDeleteRule = (id: string) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !useCustomParameters) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to delete fraud rules.",
+        title: "Action Not Available",
+        description: useCustomParameters
+          ? "Please sign in to delete fraud rules."
+          : "Enable custom parameters to delete rules.",
         variant: "destructive",
       });
       return;
@@ -152,10 +164,12 @@ const FraudSettingsTab = () => {
   };
   
   const fetchRecommendation = () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !useCustomParameters) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to get AI recommendations.",
+        title: "Action Not Available",
+        description: useCustomParameters
+          ? "Please sign in to get AI recommendations."
+          : "Enable custom parameters to get recommendations.",
         variant: "destructive",
       });
       return;
@@ -171,7 +185,7 @@ const FraudSettingsTab = () => {
   };
   
   const applyAIRecommendation = () => {
-    if (!recommendation || !isAuthenticated) return;
+    if (!recommendation || !isAuthenticated || !useCustomParameters) return;
     
     const updatedRules = applyRecommendation(rules, recommendation.suggestedChanges);
     setRules(saveFraudRules(updatedRules));
@@ -215,17 +229,18 @@ const FraudSettingsTab = () => {
   
   return (
     <div className="space-y-6">
-      <Card className="p-6">
+      <Card className="p-6 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <Shield className="h-5 w-5 text-finance-blue mr-2" />
+            <Shield className="h-5 w-5 text-finance-blue dark:text-blue-400 mr-2" />
             <h2 className="text-xl font-semibold">Custom Fraud Detection Rules</h2>
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={fetchRecommendation}
-            className="flex items-center gap-1"
+            disabled={!useCustomParameters}
+            className="flex items-center gap-1 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <Lightbulb className="h-4 w-4" />
             <span>Get AI Recommendations</span>
@@ -233,16 +248,18 @@ const FraudSettingsTab = () => {
         </div>
         
         {recommendation && (
-          <Alert className="mb-6 bg-amber-50 border-amber-200">
-            <Lightbulb className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800">AI Recommendation</AlertTitle>
-            <AlertDescription className="text-amber-700">
+          <Alert className="mb-6 bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800">
+            <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+            <AlertTitle className="text-amber-800 dark:text-amber-400">AI Recommendation</AlertTitle>
+            <AlertDescription className="text-amber-700 dark:text-amber-400">
               {recommendation.message}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={applyAIRecommendation}
-                className="mt-2 border-amber-300 bg-amber-100 hover:bg-amber-200 text-amber-800"
+                className="mt-2 border-amber-300 bg-amber-100 hover:bg-amber-200 text-amber-800 
+                dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-400 dark:hover:bg-amber-900/70"
+                disabled={!useCustomParameters}
               >
                 <Check className="h-3 w-3 mr-1" />
                 Apply Recommendation
@@ -255,23 +272,26 @@ const FraudSettingsTab = () => {
           {rules.map(rule => (
             <div 
               key={rule.id} 
-              className="p-4 border rounded-md bg-white hover:shadow-sm transition-shadow"
+              className="p-4 border rounded-md bg-white hover:shadow-sm transition-shadow
+                dark:bg-gray-700 dark:border-gray-600"
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-center mb-1">
                     <h3 className="font-medium">{rule.name}</h3>
                     {rule.threshold >= 90 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800">High Risk</span>
+                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800
+                        dark:bg-red-900/50 dark:text-red-300">High Risk</span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     {getTypeLabel(rule.type)}: {getConditionLabel(rule.condition, rule.type)} {getValueLabel(rule)}
                   </p>
                 </div>
                 <Switch 
                   checked={rule.enabled}
                   onCheckedChange={() => handleToggleRule(rule.id)}
+                  disabled={!useCustomParameters}
                 />
               </div>
               
@@ -286,7 +306,7 @@ const FraudSettingsTab = () => {
                   max={100} 
                   step={5}
                   onValueChange={([value]) => handleUpdateThreshold(rule.id, value)} 
-                  disabled={!rule.enabled}
+                  disabled={!rule.enabled || !useCustomParameters}
                   className="py-1"
                 />
               </div>
@@ -295,8 +315,10 @@ const FraudSettingsTab = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50
+                    dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                   onClick={() => handleDeleteRule(rule.id)}
+                  disabled={!useCustomParameters}
                 >
                   Delete
                 </Button>
@@ -306,7 +328,7 @@ const FraudSettingsTab = () => {
         </div>
         
         {showAddForm ? (
-          <div className="border rounded-md p-4 bg-slate-50 mb-4">
+          <div className="border rounded-md p-4 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 mb-4">
             <h3 className="font-medium mb-4">Add New Rule</h3>
             <div className="grid gap-4 mb-4">
               <div>
@@ -316,7 +338,8 @@ const FraudSettingsTab = () => {
                   value={newRule.name}
                   onChange={(e) => setNewRule({...newRule, name: e.target.value})}
                   placeholder="e.g., High-Value Transaction"
-                  className="mt-1"
+                  className="mt-1 dark:bg-slate-800 dark:border-slate-600"
+                  disabled={!useCustomParameters}
                 />
               </div>
               
@@ -326,8 +349,9 @@ const FraudSettingsTab = () => {
                   <Select 
                     value={newRule.type}
                     onValueChange={(value: any) => setNewRule({...newRule, type: value})}
+                    disabled={!useCustomParameters}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 dark:bg-slate-800 dark:border-slate-600">
                       <SelectValue placeholder="Select rule type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -344,8 +368,9 @@ const FraudSettingsTab = () => {
                   <Select 
                     value={newRule.condition}
                     onValueChange={(value: any) => setNewRule({...newRule, condition: value})}
+                    disabled={!useCustomParameters}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 dark:bg-slate-800 dark:border-slate-600">
                       <SelectValue placeholder="Select condition" />
                     </SelectTrigger>
                     <SelectContent>
@@ -386,7 +411,8 @@ const FraudSettingsTab = () => {
                       'International,High-risk country'
                     }
                     type={newRule.type === 'amount' || newRule.type === 'frequency' ? 'number' : 'text'}
-                    className="mt-1"
+                    className="mt-1 dark:bg-slate-800 dark:border-slate-600"
+                    disabled={!useCustomParameters}
                   />
                 </div>
                 
@@ -401,6 +427,7 @@ const FraudSettingsTab = () => {
                       step={5}
                       onValueChange={([value]) => setNewRule({...newRule, threshold: value})}
                       className="flex-1"
+                      disabled={!useCustomParameters}
                     />
                     <span className="w-10 text-right font-medium">{newRule.threshold}%</span>
                   </div>
@@ -412,10 +439,14 @@ const FraudSettingsTab = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setShowAddForm(false)}
+                className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
               </Button>
-              <Button onClick={handleAddRule}>
+              <Button 
+                onClick={handleAddRule}
+                disabled={!useCustomParameters}
+              >
                 Add Rule
               </Button>
             </div>
@@ -424,72 +455,80 @@ const FraudSettingsTab = () => {
           <Button
             variant="outline"
             onClick={() => setShowAddForm(true)}
-            className="w-full"
+            className="w-full dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            disabled={!useCustomParameters}
           >
             + Add Custom Rule
           </Button>
         )}
         
         {!isAuthenticated && (
-          <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+          <div className="mt-6 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded text-sm text-amber-800 dark:text-amber-400">
             <p className="font-medium">Sign in required</p>
             <p className="text-xs mt-1">You need to sign in to manage your fraud detection rules</p>
           </div>
         )}
+        
+        {!useCustomParameters && (
+          <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded text-sm text-blue-800 dark:text-blue-400">
+            <p className="font-medium">Custom Parameters disabled</p>
+            <p className="text-xs mt-1">Switch to Custom Parameters to manage fraud detection rules</p>
+          </div>
+        )}
       </Card>
       
-      <Card className="p-6">
+      <Card className="p-6 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
         <div className="flex items-center mb-4">
-          <Settings2 className="h-5 w-5 text-finance-blue mr-2" />
+          <Settings2 className="h-5 w-5 text-finance-blue dark:text-blue-400 mr-2" />
           <h2 className="text-xl font-semibold">Optimization Settings</h2>
         </div>
         
         <div className="space-y-4">
-          <div className="flex justify-between items-center py-3 border-b">
+          <div className="flex justify-between items-center py-3 border-b dark:border-gray-600">
             <div>
               <p className="font-medium">AI-Powered Fraud Detection</p>
-              <p className="text-sm text-slate-500">Use advanced AI to detect unusual patterns</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Use advanced AI to detect unusual patterns</p>
             </div>
             <Switch 
               id="ai-detection" 
               checked={true}
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !useCustomParameters}
             />
           </div>
           
-          <div className="flex justify-between items-center py-3 border-b">
+          <div className="flex justify-between items-center py-3 border-b dark:border-gray-600">
             <div>
               <p className="font-medium">Automatic Rule Refinement</p>
-              <p className="text-sm text-slate-500">Let AI adjust rules based on your transaction history</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Let AI adjust rules based on your transaction history</p>
             </div>
             <Switch 
               id="auto-refinement" 
               checked={false}
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !useCustomParameters}
             />
           </div>
           
-          <div className="flex justify-between items-center py-3 border-b">
+          <div className="flex justify-between items-center py-3 border-b dark:border-gray-600">
             <div>
               <p className="font-medium">Learning Mode</p>
-              <p className="text-sm text-slate-500">System learns from your approve/reject decisions</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">System learns from your approve/reject decisions</p>
             </div>
             <Switch 
               id="learning-mode" 
               checked={true}
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !useCustomParameters}
             />
           </div>
           
           <div className="flex justify-between items-center py-3">
             <div>
               <p className="font-medium">Monthly Rule Review</p>
-              <p className="text-sm text-slate-500">Receive monthly suggestions to optimize your rules</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Receive monthly suggestions to optimize your rules</p>
             </div>
             <Switch 
               id="monthly-review" 
               checked={false}
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !useCustomParameters}
             />
           </div>
         </div>
@@ -497,8 +536,8 @@ const FraudSettingsTab = () => {
         <div className="mt-6">
           <Button 
             variant="outline" 
-            className="w-full"
-            disabled={!isAuthenticated}
+            className="w-full dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            disabled={!isAuthenticated || !useCustomParameters}
             onClick={() => {
               toast({
                 title: "Settings Saved",

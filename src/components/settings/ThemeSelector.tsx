@@ -9,14 +9,15 @@ const ThemeSelector = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
       <h2 className="text-xl font-semibold mb-4">Theme Settings</h2>
-      <p className="text-sm text-slate-500 mb-6">Choose your preferred theme mode</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Choose your preferred theme mode</p>
       
       <div className="flex flex-wrap gap-4">
         <Button 
           variant={theme === 'light' ? 'default' : 'outline'} 
-          className="h-24 flex-1 flex flex-col justify-center items-center gap-2"
+          className={`h-24 flex-1 flex flex-col justify-center items-center gap-2 
+            ${theme !== 'light' ? 'dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700' : ''}`}
           onClick={() => setTheme('light')}
         >
           <Sun className="h-6 w-6" />
@@ -25,7 +26,8 @@ const ThemeSelector = () => {
         
         <Button 
           variant={theme === 'dark' ? 'default' : 'outline'} 
-          className="h-24 flex-1 flex flex-col justify-center items-center gap-2"
+          className={`h-24 flex-1 flex flex-col justify-center items-center gap-2
+            ${theme !== 'dark' ? 'dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700' : ''}`}
           onClick={() => setTheme('dark')}
         >
           <Moon className="h-6 w-6" />
@@ -34,7 +36,8 @@ const ThemeSelector = () => {
         
         <Button 
           variant={theme === 'system' ? 'default' : 'outline'} 
-          className="h-24 flex-1 flex flex-col justify-center items-center gap-2"
+          className={`h-24 flex-1 flex flex-col justify-center items-center gap-2
+            ${theme !== 'system' ? 'dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700' : ''}`}
           onClick={() => setTheme('system')}
         >
           <Laptop className="h-6 w-6" />
@@ -42,7 +45,7 @@ const ThemeSelector = () => {
         </Button>
       </div>
       
-      <p className="text-xs text-slate-500 mt-4">
+      <p className="text-xs text-slate-500 dark:text-slate-400 mt-4">
         {theme === 'system' 
           ? 'Following your system preferences' 
           : `Using ${theme} mode`}

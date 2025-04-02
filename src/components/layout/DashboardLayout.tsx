@@ -101,8 +101,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-30 w-full bg-white border-b border-gray-200 shadow-sm">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="sticky top-0 z-30 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -115,8 +115,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <span className="sr-only">Toggle Menu</span>
             </Button>
             
-            <div className="font-bold text-finance-blue text-lg flex items-center">
-              <span className="mr-2 bg-finance-blue text-white p-1 rounded-md">FS</span>
+            <div className="font-bold text-finance-blue dark:text-blue-400 text-lg flex items-center">
+              <span className="mr-2 bg-finance-blue dark:bg-blue-600 text-white p-1 rounded-md">FS</span>
               Finance Sentinel
             </div>
           </div>
@@ -132,9 +132,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="flex items-center space-x-2 hover:bg-gray-100"
+                  className="flex items-center space-x-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  <Avatar className="h-8 w-8 border-2 border-gray-200">
+                  <Avatar className="h-8 w-8 border-2 border-gray-200 dark:border-gray-600">
                     <AvatarFallback className="bg-finance-blue text-white">{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
                   <span className="hidden md:inline font-medium text-sm">
@@ -148,7 +148,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuItem onClick={() => setShowUserProfile(true)}>
                   <span>View Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -163,7 +163,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
       {isOpen && (
         <div className="fixed inset-0 z-20 bg-black/50 md:hidden" onClick={() => setIsOpen(false)}>
-          <div className="absolute left-0 top-16 bottom-0 w-64 bg-white p-4 shadow-lg" onClick={e => e.stopPropagation()}>
+          <div className="absolute left-0 top-16 bottom-0 w-64 bg-white dark:bg-gray-800 p-4 shadow-lg" onClick={e => e.stopPropagation()}>
             <nav className="flex flex-col space-y-1">
               {navItems.map((link) => (
                 <NavLink key={link.label} to={link.to} icon={link.icon}>{link.label}</NavLink>
