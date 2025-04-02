@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from '@/contexts/UserContext';
 import SignInForm from '@/components/auth/SignInForm';
 import { useToast } from "@/hooks/use-toast";
+import ThemeSelector from '@/components/settings/ThemeSelector';
 
 const Settings = () => {
   const { user, isAuthenticated, updateProfile, login } = useUser();
@@ -78,7 +79,7 @@ const Settings = () => {
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="api">API Access</TabsTrigger>
+            <TabsTrigger value="theme">Theme</TabsTrigger>
           </TabsList>
           
           <TabsContent value="account">
@@ -244,59 +245,8 @@ const Settings = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="api">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">API Access</h2>
-              <p className="text-slate-500 mb-4">Manage your API keys and access to the Finance Sentinel API</p>
-              
-              <div className="border rounded-md p-4 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <div>
-                    <p className="font-medium">API Key</p>
-                    <p className="font-mono text-sm">••••••••••••••••••••••••</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => {
-                    if (!isAuthenticated) {
-                      setShowSignIn(true);
-                      return;
-                    }
-                    
-                    toast({
-                      title: "API Key Revealed",
-                      description: "Your API key is now visible (for demo purposes)",
-                    });
-                  }}>Reveal</Button>
-                </div>
-                <div className="text-sm text-slate-500">
-                  Created on: March 15, 2023
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <Button variant="outline" onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowSignIn(true);
-                    return;
-                  }
-                  
-                  toast({
-                    title: "API Key Regenerated",
-                    description: "Your API key has been regenerated successfully",
-                  });
-                }}>Regenerate Key</Button>
-                <Button onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowSignIn(true);
-                    return;
-                  }
-                  
-                  toast({
-                    title: "New API Key Created",
-                    description: "A new API key has been created successfully",
-                  });
-                }}>Create New Key</Button>
-              </div>
-            </Card>
+          <TabsContent value="theme">
+            <ThemeSelector />
           </TabsContent>
         </Tabs>
       </div>

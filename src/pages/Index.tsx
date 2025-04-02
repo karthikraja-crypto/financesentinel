@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import TransactionTable from '@/components/dashboard/TransactionTable';
 import TransactionChart from '@/components/dashboard/TransactionChart';
-import FraudDetectionPanel from '@/components/dashboard/FraudDetectionPanel';
 import AnalyticsCard from '@/components/dashboard/AnalyticsCard';
 import CurrencySelector from '@/components/dashboard/CurrencySelector';
 import DatasetUploader from '@/components/dashboard/DatasetUploader';
@@ -18,7 +16,7 @@ import { formatCurrency } from '@/utils/analytics';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useDataset } from '@/contexts/DatasetContext';
-import { ArrowUpRight, TrendingUp, BarChart3, PieChart as PieChartIcon, AlertTriangle } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 
 // Define types for the tooltip props
 interface CustomTooltipProps {
@@ -135,15 +133,10 @@ const Index = () => {
       <DashboardHeader summary={summary} />
       
       {/* Main Dashboard Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Transaction Chart */}
-        <div className="lg:col-span-2">
-          <TransactionChart data={dailyTotals} />
-        </div>
-        
-        {/* Fraud Detection Panel */}
         <div className="lg:col-span-1">
-          <FraudDetectionPanel transactions={transactions} />
+          <TransactionChart data={dailyTotals} />
         </div>
         
         {/* Dataset Uploader */}
@@ -242,9 +235,9 @@ const Index = () => {
           </div>
         </AnalyticsCard>
         
-        {/* AI Detection Summary */}
+        {/* AI Recognition Summary */}
         <AnalyticsCard 
-          title="AI Detection Summary" 
+          title="AI Recognition Summary" 
           subtitle="AI-powered fraud detection metrics"
           className="animate-slide-in animation-delay-600"
         >
@@ -268,7 +261,7 @@ const Index = () => {
                   <div className="text-xl font-semibold text-slate-900">{summary.flaggedTransactions}</div>
                 </div>
                 <div className="p-2 bg-red-100 rounded-full">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <PieChartIcon className="h-5 w-5 text-red-600" />
                 </div>
               </div>
               <div className="mt-2 text-xs">
@@ -325,9 +318,6 @@ const Index = () => {
           </div>
         </AnalyticsCard>
       </div>
-      
-      {/* Recent Transactions Table */}
-      <TransactionTable transactions={transactions} />
     </DashboardLayout>
   );
 };

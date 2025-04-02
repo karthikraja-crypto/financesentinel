@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { UserProvider } from "./contexts/UserContext";
 import { DatasetProvider } from './contexts/DatasetContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Index from "./pages/Index";
 import Transactions from "./pages/Transactions";
 import Analytics from "./pages/Analytics";
@@ -22,24 +23,26 @@ const App = () => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <UserProvider>
-          <CurrencyProvider>
-            <DatasetProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/transactions" element={<Transactions />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/flexible-parameters" element={<FlexibleParameters />} />
-                <Route path="/alerts" element={<Alerts />} />
-                <Route path="/flagged-transactions" element={<FlaggedTransactions />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </DatasetProvider>
-          </CurrencyProvider>
-        </UserProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <CurrencyProvider>
+              <DatasetProvider>
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/flexible-parameters" element={<FlexibleParameters />} />
+                  <Route path="/alerts" element={<Alerts />} />
+                  <Route path="/flagged-transactions" element={<FlaggedTransactions />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </DatasetProvider>
+            </CurrencyProvider>
+          </UserProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </BrowserRouter>
