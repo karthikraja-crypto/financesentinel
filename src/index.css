@@ -64,7 +64,7 @@
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20.2% 75%;  /* Increased contrast from 65.1% to 75% */
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -94,6 +94,37 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+  }
+  
+  /* Improve dark mode text visibility in inputs and placeholders */
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    @apply text-gray-400;
+  }
+  
+  /* Ensure links are more visible in dark mode */
+  .dark a:not(.btn) {
+    @apply text-blue-400 hover:text-blue-300;
+  }
+  
+  /* Improve visibility of headings in dark mode */
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-white;
+  }
+  
+  /* Improve visibility of table text in dark mode */
+  .dark table th {
+    @apply text-gray-200;
+  }
+  
+  .dark table td {
+    @apply text-gray-200;
+  }
+  
+  /* Enhanced button hover states for dark mode */
+  .dark .btn, 
+  .dark button:not(.btn-ghost):not(.btn-link) {
+    @apply hover:brightness-110 active:brightness-90;
   }
 }
 
@@ -185,4 +216,28 @@
 /* Focus ring */
 .focus-ring {
   @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+}
+
+/* Improved dark mode dropdown visibility */
+.dark [role="menu"],
+.dark [role="listbox"],
+.dark [data-radix-popper-content-wrapper] div {
+  @apply bg-gray-800 border-gray-700 text-gray-100;
+}
+
+/* Improved hover states for interactive elements */
+.dark .hover\:bg-accent:hover,
+.dark .hover\:bg-secondary:hover {
+  @apply bg-gray-700;
+}
+
+/* Enhanced button text visibility */
+.dark button:not([aria-disabled="true"]) {
+  @apply text-gray-100;
+}
+
+/* Improve contrast for disabled elements */
+.dark [aria-disabled="true"],
+.dark :disabled {
+  @apply opacity-60 text-gray-400;
 }
