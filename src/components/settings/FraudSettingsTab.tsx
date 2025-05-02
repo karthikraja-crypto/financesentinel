@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,14 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
     enabled: true
   });
   
+  // Optimization settings state
+  const [optimizationSettings, setOptimizationSettings] = useState({
+    aiDetection: true,
+    autoRefinement: false,
+    learningMode: true,
+    monthlyReview: false
+  });
+  
   const { user, isAuthenticated } = useUser();
   const { toast } = useToast();
   
@@ -72,7 +81,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
     
     toast({
       title: "Rule Updated",
-      description: `Fraud detection rule has been ${updatedRules.find(r => r.id === id)?.enabled ? 'enabled' : 'disabled'}.`,
+      description: `Custom risk assessment parameter has been ${updatedRules.find(r => r.id === id)?.enabled ? 'enabled' : 'disabled'}.`,
     });
   };
   
@@ -137,7 +146,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
     
     toast({
       title: "Rule Added",
-      description: `New fraud detection rule "${newRule.name}" has been added.`,
+      description: `New custom risk assessment parameter "${newRule.name}" has been added.`,
     });
   };
   
@@ -158,7 +167,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
     
     toast({
       title: "Rule Deleted",
-      description: "Fraud detection rule has been deleted.",
+      description: "Custom risk assessment parameter has been deleted.",
     });
   };
   
@@ -192,10 +201,34 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
     
     toast({
       title: "Recommendations Applied",
-      description: "AI suggestions have been applied to your fraud rules.",
+      description: "AI suggestions have been applied to your custom risk assessment parameters.",
     });
   };
   
+  // New function to handle toggling optimization settings
+  const handleToggleOptimizationSetting = (settingKey: keyof typeof optimizationSettings) => {
+    if (!isAuthenticated || !useCustomParameters) {
+      toast({
+        title: "Action Not Available",
+        description: useCustomParameters
+          ? "Please sign in to change settings."
+          : "Enable custom parameters to modify settings.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setOptimizationSettings(prev => ({
+      ...prev,
+      [settingKey]: !prev[settingKey]
+    }));
+    
+    toast({
+      title: "Setting Updated",
+      description: `Optimization setting has been ${!optimizationSettings[settingKey] ? 'enabled' : 'disabled'}.`,
+    });
+  };
+
   const getTypeLabel = (type: string) => {
     switch(type) {
       case 'amount': return 'Transaction Amount';
@@ -490,8 +523,10 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             </div>
             <Switch 
               id="ai-detection" 
-              checked={true}
+              checked={optimizationSettings.aiDetection}
+              onCheckedChange={() => handleToggleOptimizationSetting('aiDetection')}
               disabled={!isAuthenticated || !useCustomParameters}
+              className={!useCustomParameters ? "opacity-50" : ""}
             />
           </div>
           
@@ -502,8 +537,10 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             </div>
             <Switch 
               id="auto-refinement" 
-              checked={false}
+              checked={optimizationSettings.autoRefinement}
+              onCheckedChange={() => handleToggleOptimizationSetting('autoRefinement')}
               disabled={!isAuthenticated || !useCustomParameters}
+              className={!useCustomParameters ? "opacity-50" : ""}
             />
           </div>
           
@@ -514,8 +551,10 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             </div>
             <Switch 
               id="learning-mode" 
-              checked={true}
+              checked={optimizationSettings.learningMode}
+              onCheckedChange={() => handleToggleOptimizationSetting('learningMode')}
               disabled={!isAuthenticated || !useCustomParameters}
+              className={!useCustomParameters ? "opacity-50" : ""}
             />
           </div>
           
@@ -526,8 +565,10 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             </div>
             <Switch 
               id="monthly-review" 
-              checked={false}
+              checked={optimizationSettings.monthlyReview}
+              onCheckedChange={() => handleToggleOptimizationSetting('monthlyReview')}
               disabled={!isAuthenticated || !useCustomParameters}
+              className={!useCustomParameters ? "opacity-50" : ""}
             />
           </div>
         </div>
@@ -538,8 +579,19 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             className="w-full dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             disabled={!isAuthenticated || !useCustomParameters}
             onClick={() => {
+              if (!isAuthenticated || !useCustomParameters) {
+                toast({
+                  title: "Action Not Available",
+                  description: useCustomParameters
+                    ? "Please sign in to refresh settings."
+                    : "Enable custom parameters to refresh settings.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
               toast({
-                title: "Settings Saved",
+                title: "Settings Refreshed",
                 description: "Your risk assessment preferences have been updated.",
               });
             }}
