@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Calendar, CreditCard, Tag, Map, ArrowRight, AlertTriangle, Flag } from 'lucide-react';
+import { X, Calendar, CreditCard, Tag, Map, ArrowRight, AlertTriangle, Flag, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
 import { Transaction } from '@/utils/demoData';
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +20,7 @@ interface TransactionDetailsProps {
 const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, onClose }) => {
   const { user } = useUser();
   const { toast } = useToast();
-  const { flagTransaction } = useDataset();
+  const { flagTransaction, dismissAlert } = useDataset();
   const [isReporting, setIsReporting] = React.useState(false);
   
   const getRiskColor = (score: number): string => {
@@ -40,7 +39,6 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
     }
   };
   
-  // Add risk factors based on transaction characteristics
   const getRiskFactors = () => {
     const factors = [];
     
@@ -56,13 +54,10 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
       factors.push({ factor: "High-Value Electronics Purchase", description: "Electronics purchase exceeding $2,000" });
     }
     
-    // Fix: Instead of comparing transaction.type with "online", check for a property that indicates it's an online transaction
-    // For example, we could check if the transaction has an online flag or infer it from other properties
     if (transaction.riskScore > 70) {
       factors.push({ factor: "High-Risk Transaction", description: "Transaction with elevated risk score" });
     }
     
-    // Add a default factor if none were triggered
     if (factors.length === 0) {
       factors.push({ factor: "Unusual Transaction Pattern", description: "Transaction deviates from normal patterns" });
     }
@@ -70,11 +65,11 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
     return factors;
   };
   
-  const handleReportFraud = async () => {
+  const handleFlagTransaction = async () => {
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "Please sign in to report fraud.",
+        description: "Please sign in to flag a transaction.",
         variant: "destructive",
       });
       return;
@@ -82,32 +77,41 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
     
     setIsReporting(true);
     try {
-      const reportDetails = {
-        ...transaction,
-        reportedBy: user.email,
-        reportedAt: new Date().toISOString(),
-      };
-      
-      await sendFraudReportEmail(transaction.id, reportDetails);
-      
+      // Only send email for manual flags when needed
       if (transaction.status !== 'flagged') {
         flagTransaction(transaction.id);
       }
       
       toast({
-        title: "Fraud Report Submitted",
-        description: `A confirmation email has been sent to ${user.email}`,
+        title: "Transaction Flagged",
+        description: `Transaction ${transaction.id} has been marked as fraudulent.`,
         variant: "default",
       });
+      
+      // Close the modal after successful flagging
+      onClose();
     } catch (error) {
       toast({
-        title: "Error Reporting Fraud",
-        description: "There was an error submitting the fraud report. Please try again.",
+        title: "Error Flagging Transaction",
+        description: "There was an error flagging the transaction. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsReporting(false);
     }
+  };
+  
+  const handleDismissAlert = () => {
+    dismissAlert(transaction.id);
+    
+    toast({
+      title: "Alert Dismissed",
+      description: `Alert for transaction ${transaction.id} has been dismissed.`,
+      variant: "default",
+    });
+    
+    // Close the modal after dismissing
+    onClose();
   };
   
   return (
@@ -234,7 +238,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
               </div>
             </div>
             
-            {/* Custom Parameters Section (when available) */}
+            {/* Custom Parameters Section */}
             <div className="mb-6 border-t border-slate-200 pt-4">
               <h3 className="font-medium mb-3">Matching Custom Parameters</h3>
               <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
@@ -250,7 +254,6 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
                       </div>
                     </div>
                     
-                    {/* Fix: Remove the type comparison with "online" and check for high risk score instead */}
                     {transaction.riskScore > 65 && (
                       <div className="mt-3 pt-3 border-t border-slate-200">
                         <div className="flex items-start">
@@ -315,18 +318,35 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
         </ScrollArea>
         
         <div className="flex justify-between p-4 border-t border-slate-200 mt-auto">
-          {transaction.status === 'flagged' || transaction.riskScore > 70 ? (
-            <Button 
-              variant="destructive" 
-              disabled={isReporting}
-              onClick={handleReportFraud}
-            >
-              <Flag className="h-4 w-4 mr-1" />
-              {isReporting ? 'Sending Report...' : 'Report Fraud'}
-            </Button>
-          ) : (
-            <div></div>
+          {transaction.status !== 'flagged' && (
+            <div className="flex gap-2">
+              <Button 
+                variant="destructive" 
+                disabled={isReporting}
+                onClick={handleFlagTransaction}
+              >
+                <Flag className="h-4 w-4 mr-1" />
+                {isReporting ? 'Processing...' : 'Flag Transaction'}
+              </Button>
+              
+              <Button 
+                variant="secondary"
+                onClick={handleDismissAlert}
+              >
+                <CheckCircle className="h-4 w-4 mr-1" />
+                Dismiss Alert
+              </Button>
+            </div>
           )}
+          
+          {transaction.status === 'flagged' && (
+            <div>
+              <Badge variant="destructive" className="mr-2">
+                This transaction has been flagged as fraudulent
+              </Badge>
+            </div>
+          )}
+          
           <Button onClick={onClose}>
             Close
           </Button>
