@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { AlertTriangle, ShieldAlert, Flag, CheckCircle } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Flag, CheckCircle, Eye } from 'lucide-react';
 import { formatCurrency } from '@/utils/analytics';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { useDataset } from '@/contexts/DatasetContext';
+import TransactionDetails from '@/components/dashboard/TransactionDetails';
 
 const Alerts = () => {
   const { transactions, flagTransaction, dismissAlert } = useDataset();
@@ -18,6 +19,7 @@ const Alerts = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   
   const handleFlagTransaction = (transactionId: string) => {
     flagTransaction(transactionId);
@@ -37,8 +39,12 @@ const Alerts = () => {
     });
   };
   
-  const handleViewDetails = (transactionId: string) => {
-    navigate(`/transactions?id=${transactionId}`);
+  const handleViewDetails = (transaction) => {
+    setSelectedTransaction(transaction);
+  };
+  
+  const handleCloseDetails = () => {
+    setSelectedTransaction(null);
   };
   
   return (
@@ -104,6 +110,14 @@ const Alerts = () => {
                 
                 <div className="flex justify-end gap-2">
                   <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewDetails(transaction)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
+                  <Button 
                     variant="destructive" 
                     size="sm"
                     onClick={() => handleFlagTransaction(transaction.id)}
@@ -133,6 +147,13 @@ const Alerts = () => {
           </div>
         )}
       </div>
+      
+      {selectedTransaction && (
+        <TransactionDetails 
+          transaction={selectedTransaction}
+          onClose={handleCloseDetails}
+        />
+      )}
     </DashboardLayout>
   );
 };

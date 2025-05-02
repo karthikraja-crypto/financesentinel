@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,34 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
       case 'flagged': return 'bg-red-100 text-red-800';
       default: return 'bg-slate-100 text-slate-800';
     }
+  };
+  
+  // Add risk factors based on transaction characteristics
+  const getRiskFactors = () => {
+    const factors = [];
+    
+    if (transaction.amount > 5000) {
+      factors.push({ factor: "Large Transaction Amount", description: "Transaction exceeds $5,000" });
+    }
+    
+    if (transaction.riskScore > 80) {
+      factors.push({ factor: "High Risk Score", description: "Risk score exceeds 80%" });
+    }
+    
+    if (transaction.category === "Electronics" && transaction.amount > 2000) {
+      factors.push({ factor: "High-Value Electronics Purchase", description: "Electronics purchase exceeding $2,000" });
+    }
+    
+    if (transaction.type === "online" && transaction.riskScore > 70) {
+      factors.push({ factor: "High-Risk Online Transaction", description: "Online transaction with elevated risk score" });
+    }
+    
+    // Add a default factor if none were triggered
+    if (factors.length === 0) {
+      factors.push({ factor: "Unusual Transaction Pattern", description: "Transaction deviates from normal patterns" });
+    }
+    
+    return factors;
   };
   
   const handleReportFraud = async () => {
@@ -177,6 +206,60 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
                     : "This transaction appears to be legitimate."}
               </p>
             </div>
+          </div>
+        </div>
+        
+        {/* New Risk Factors Section */}
+        <div className="mb-6 border-t border-slate-200 pt-4">
+          <h3 className="font-medium mb-3">Risk Factors</h3>
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            {getRiskFactors().map((factor, index) => (
+              <div key={index} className={index > 0 ? "mt-3 pt-3 border-t border-slate-200" : ""}>
+                <div className="flex items-start">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 mr-2" />
+                  <div>
+                    <p className="font-medium text-slate-900">{factor.factor}</p>
+                    <p className="text-sm text-slate-600">{factor.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Custom Parameters Section (when available) */}
+        <div className="mb-6 border-t border-slate-200 pt-4">
+          <h3 className="font-medium mb-3">Matching Custom Parameters</h3>
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            {transaction.riskScore > 70 ? (
+              <div>
+                <div className="flex items-start">
+                  <div className="bg-blue-100 rounded-full p-1 mr-3">
+                    <ArrowRight className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900">High Value Transaction</p>
+                    <p className="text-sm text-slate-600">Transaction amount exceeds normal patterns</p>
+                  </div>
+                </div>
+                
+                {transaction.type === 'online' && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <div className="flex items-start">
+                      <div className="bg-blue-100 rounded-full p-1 mr-3">
+                        <ArrowRight className="h-3 w-3 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">Online Transaction Risk</p>
+                        <p className="text-sm text-slate-600">Online transactions have higher fraud potential</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-slate-500 text-sm italic">No matching custom parameters</p>
+            )}
           </div>
         </div>
         
