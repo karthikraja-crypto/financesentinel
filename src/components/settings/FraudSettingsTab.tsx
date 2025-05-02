@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -233,7 +232,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <Shield className="h-5 w-5 text-finance-blue dark:text-blue-400 mr-2" />
-            <h2 className="text-xl font-semibold">Custom Fraud Detection Rules</h2>
+            <h2 className="text-xl font-semibold">Custom Risk Assessment Parameters</h2>
           </div>
           <Button
             variant="outline"
@@ -329,10 +328,10 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
         
         {showAddForm ? (
           <div className="border rounded-md p-4 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 mb-4">
-            <h3 className="font-medium mb-4">Add New Rule</h3>
+            <h3 className="font-medium mb-4">Add New Parameter</h3>
             <div className="grid gap-4 mb-4">
               <div>
-                <Label htmlFor="rule-name">Rule Name</Label>
+                <Label htmlFor="rule-name">Parameter Name</Label>
                 <Input 
                   id="rule-name"
                   value={newRule.name}
@@ -447,7 +446,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
                 onClick={handleAddRule}
                 disabled={!useCustomParameters}
               >
-                Add Rule
+                Add Parameter
               </Button>
             </div>
           </div>
@@ -458,21 +457,21 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             className="w-full dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             disabled={!useCustomParameters}
           >
-            + Add Custom Rule
+            + Add Custom Parameter
           </Button>
         )}
         
         {!isAuthenticated && (
           <div className="mt-6 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded text-sm text-amber-800 dark:text-amber-400">
             <p className="font-medium">Sign in required</p>
-            <p className="text-xs mt-1">You need to sign in to manage your fraud detection rules</p>
+            <p className="text-xs mt-1">You need to sign in to manage your risk assessment parameters</p>
           </div>
         )}
         
         {!useCustomParameters && (
           <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded text-sm text-blue-800 dark:text-blue-400">
             <p className="font-medium">Custom Parameters disabled</p>
-            <p className="text-xs mt-1">Switch to Custom Parameters to manage fraud detection rules</p>
+            <p className="text-xs mt-1">Switch to Custom Parameters to manage risk assessment parameters</p>
           </div>
         )}
       </Card>
@@ -486,7 +485,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
         <div className="space-y-4">
           <div className="flex justify-between items-center py-3 border-b dark:border-gray-600">
             <div>
-              <p className="font-medium">AI-Powered Fraud Detection</p>
+              <p className="font-medium">AI-Powered Risk Detection</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Use advanced AI to detect unusual patterns</p>
             </div>
             <Switch 
@@ -498,8 +497,8 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
           
           <div className="flex justify-between items-center py-3 border-b dark:border-gray-600">
             <div>
-              <p className="font-medium">Automatic Rule Refinement</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Let AI adjust rules based on your transaction history</p>
+              <p className="font-medium">Automatic Parameter Refinement</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Let AI adjust parameters based on your transaction history</p>
             </div>
             <Switch 
               id="auto-refinement" 
@@ -522,8 +521,8 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
           
           <div className="flex justify-between items-center py-3">
             <div>
-              <p className="font-medium">Monthly Rule Review</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Receive monthly suggestions to optimize your rules</p>
+              <p className="font-medium">Monthly Parameter Review</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Receive monthly suggestions to optimize your parameters</p>
             </div>
             <Switch 
               id="monthly-review" 
@@ -541,7 +540,7 @@ const FraudSettingsTab: React.FC<FraudSettingsTabProps> = ({ useCustomParameters
             onClick={() => {
               toast({
                 title: "Settings Saved",
-                description: "Your fraud detection preferences have been updated.",
+                description: "Your risk assessment preferences have been updated.",
               });
             }}
           >
