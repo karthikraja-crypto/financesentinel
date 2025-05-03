@@ -238,9 +238,9 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
               </div>
             </div>
             
-            {/* Custom Parameters Section */}
+            {/* Custom Parameters Section - Updated Title */}
             <div className="mb-6 border-t border-slate-200 pt-4">
-              <h3 className="font-medium mb-3">Matching Custom Parameters</h3>
+              <h3 className="font-medium mb-3">Matching Custom/AI Parameters</h3>
               <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                 {transaction.riskScore > 70 ? (
                   <div>
