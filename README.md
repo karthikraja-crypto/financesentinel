@@ -1,8 +1,7 @@
-# Welcome to your Lovable project
-
+# Welcome to FinanceSentinel!
 ## Project info
 
-**URL**: https://lovable.dev/projects/572f5d61-ed1b-4488-8c84-ff3f4ca5e9d8
+**URL**:(https://financesentinel.vercel.app/)
 
 ## How can I edit this code?
 
@@ -62,7 +61,7 @@ This project is built with .
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/572f5d61-ed1b-4488-8c84-ff3f4ca5e9d8) and click on Share -> Publish.
+Simply open [Lovable]and click on Share -> Publish.
 
 ## I want to use a custom domain - is that possible?
 
